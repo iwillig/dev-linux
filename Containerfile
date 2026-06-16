@@ -1,35 +1,7 @@
 ARG BASE_IMAGE="ghcr.io/ublue-os/bluefin-dx"
-# Pinned to Fedora 43: gts is also fc44, so we use the explicit tag.
-# libdisplay-info-0.2.0 on fc43 provides .so.2 needed by the solopasha COPR's
-# aquamarine. Switch to "stable" once the COPR rebuilds for fc44.
-ARG TAG="43"
+ARG TAG="stable"
 
 FROM ${BASE_IMAGE}:${TAG}
-
-# ── Hyprland COPR ────────────────────────────────────────────────────────────
-RUN FEDORA_VER=$(. /etc/os-release && echo "$VERSION_ID") && \
-    curl -fsSL \
-      "https://copr.fedorainfracloud.org/coprs/solopasha/hyprland/repo/fedora-${FEDORA_VER}/solopasha-hyprland-fedora-${FEDORA_VER}.repo" \
-      -o /etc/yum.repos.d/solopasha-hyprland.repo && \
-    ostree container commit
-
-# ── Hyprland & Wayland compositor stack ──────────────────────────────────────
-RUN rpm-ostree install \
-    hyprland \
-    hyprlock \
-    hyprpaper \
-    hypridle \
-    waybar \
-    wofi \
-    mako \
-    xdg-desktop-portal-hyprland \
-    wl-clipboard \
-    grim \
-    slurp \
-    lxqt-policykit \
-    qt5ct \
-    qt6ct \
-    && ostree container commit
 
 # ── Framework laptop & Intel-specific ────────────────────────────────────────
 RUN rpm-ostree install \
@@ -39,9 +11,9 @@ RUN rpm-ostree install \
     powertop \
     && ostree container commit
 
-# ── Developer tooling (beyond what bluefin-dx already ships) ─────────────────
-# ripgrep already pulled in as a waybar dep; starship not in fc43 repos
+# ── Developer tooling ────────────────────────────────────────────────────────
 RUN rpm-ostree install \
+    emacs \
     neovim \
     tmux \
     fd-find \
@@ -54,14 +26,13 @@ RUN rpm-ostree install \
     httpie \
     && ostree container commit
 
-# starship: not in Fedora 43 repos; /usr/local/bin doesn't exist in ostree images
+# starship: not in Fedora repos; /usr/local/bin doesn't exist in ostree images
 RUN curl -fsSL \
     "https://github.com/starship/starship/releases/latest/download/starship-x86_64-unknown-linux-musl.tar.gz" \
     | tar -xz -C /usr/bin starship && \
     ostree container commit
 
 # ── Fonts ─────────────────────────────────────────────────────────────────────
-# inter-fonts not in fc43 repos; download from upstream instead
 RUN rpm-ostree install \
     jetbrains-mono-fonts \
     cascadia-code-fonts \
