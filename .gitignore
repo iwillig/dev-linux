@@ -1,3 +1,5 @@
 .DS_Store
 *.oci
 *.tar
+vm/*.qcow2
+vm/*.iso
