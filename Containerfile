@@ -40,28 +40,43 @@ RUN rpm-ostree install \
     && ostree container commit
 
 # ── Developer tooling (beyond what bluefin-dx already ships) ─────────────────
+# ripgrep already pulled in as a waybar dep; starship not in fc43 repos
 RUN rpm-ostree install \
     neovim \
     tmux \
-    ripgrep \
     fd-find \
     bat \
     eza \
     zoxide \
     fzf \
-    starship \
     jq \
     yq \
     httpie \
     && ostree container commit
 
+# starship: not in Fedora 43 repos; /usr/local/bin doesn't exist in ostree images
+RUN curl -fsSL \
+    "https://github.com/starship/starship/releases/latest/download/starship-x86_64-unknown-linux-musl.tar.gz" \
+    | tar -xz -C /usr/bin starship && \
+    ostree container commit
+
 # ── Fonts ─────────────────────────────────────────────────────────────────────
+# inter-fonts not in fc43 repos; download from upstream instead
 RUN rpm-ostree install \
     jetbrains-mono-fonts \
     cascadia-code-fonts \
-    inter-fonts \
     google-noto-emoji-fonts \
     && ostree container commit
+
+RUN mkdir -p /usr/share/fonts/inter && \
+    INTER_URL=$(curl -sL "https://api.github.com/repos/rsms/inter/releases/latest" | \
+      jq -r '.assets[] | select(.name | endswith(".zip")) | .browser_download_url') && \
+    curl -fsSL "$INTER_URL" -o /tmp/inter.zip && \
+    unzip -q /tmp/inter.zip -d /tmp/inter-extracted && \
+    find /tmp/inter-extracted -name "*.otf" -exec cp {} /usr/share/fonts/inter/ \; && \
+    rm -rf /tmp/inter.zip /tmp/inter-extracted && \
+    fc-cache -f && \
+    ostree container commit
 
 # Download JetBrains Mono Nerd Font (patched version, not in Fedora repos)
 RUN NERD_FONT_VERSION="v3.2.1" && \
