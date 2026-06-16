@@ -1,7 +1,17 @@
 ARG BASE_IMAGE="ghcr.io/ublue-os/bluefin-dx"
-ARG TAG="stable"
+# gts = Fedora 43, which has libdisplay-info-0.2.0 (provides .so.2) needed by
+# the solopasha COPR's aquamarine. Switch back to "stable" once the COPR is
+# rebuilt against libdisplay-info-0.3.0 (fc44).
+ARG TAG="gts"
 
 FROM ${BASE_IMAGE}:${TAG}
+
+# ── Hyprland COPR ────────────────────────────────────────────────────────────
+RUN FEDORA_VER=$(. /etc/os-release && echo "$VERSION_ID") && \
+    curl -fsSL \
+      "https://copr.fedorainfracloud.org/coprs/solopasha/hyprland/repo/fedora-${FEDORA_VER}/solopasha-hyprland-fedora-${FEDORA_VER}.repo" \
+      -o /etc/yum.repos.d/solopasha-hyprland.repo && \
+    ostree container commit
 
 # ── Hyprland & Wayland compositor stack ──────────────────────────────────────
 RUN rpm-ostree install \
