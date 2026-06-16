@@ -37,6 +37,42 @@ check-upstream:
 clean:
     podman rmi {{IMAGE}} 2>/dev/null || true
 
+# ── Framework installation ────────────────────────────────────────────────────
+
+# List disks to find your USB device before writing
+usb-list:
+    diskutil list external
+
+# Write the Fedora Silverblue ISO to a USB drive (macOS)
+# Usage: just usb-write /dev/disk4
+# Find your USB device first with: just usb-list
+usb-write DEVICE:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [[ ! -f "{{VM_ISO}}" ]]; then
+        echo "ISO not found at {{VM_ISO}}"
+        echo "Run: just vm-download-iso"
+        exit 1
+    fi
+    echo ""
+    echo "  ISO:    {{VM_ISO}}"
+    echo "  Target: {{DEVICE}}"
+    echo ""
+    echo "WARNING: ALL DATA ON {{DEVICE}} WILL BE PERMANENTLY DESTROYED."
+    read -p "  Type 'yes' to continue: " confirm
+    [[ "$confirm" == "yes" ]] || { echo "Aborted."; exit 1; }
+    echo "Unmounting {{DEVICE}}..."
+    diskutil unmountDisk {{DEVICE}}
+    RAW="${{DEVICE/disk/rdisk}}"
+    echo "Writing ISO to $RAW (this will take a few minutes)..."
+    sudo dd if={{VM_ISO}} of=$RAW bs=4m
+    sync
+    echo ""
+    echo "Done. Eject the USB and boot your Framework from it."
+    echo "After installing Fedora Silverblue, run the switch command:"
+    echo ""
+    echo "  sudo bootc switch ghcr.io/iwillig/dev-linux:latest"
+
 # ── Release ───────────────────────────────────────────────────────────────────
 
 # Tag a release and trigger the disk image build in CI
