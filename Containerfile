@@ -3,14 +3,6 @@ ARG TAG="stable"
 
 FROM ${BASE_IMAGE}:${TAG}
 
-# ── Hyprland COPR ────────────────────────────────────────────────────────────
-# hyprland, hyprlock, hyprpaper, hypridle are not in Fedora official repos
-RUN FEDORA_VER=$(. /etc/os-release && echo "$VERSION_ID") && \
-    curl -fsSL \
-      "https://copr.fedorainfracloud.org/coprs/solopasha/hyprland/repo/fedora-${FEDORA_VER}/solopasha-hyprland-fedora-${FEDORA_VER}.repo" \
-      -o /etc/yum.repos.d/solopasha-hyprland.repo && \
-    ostree container commit
-
 # ── Hyprland & Wayland compositor stack ──────────────────────────────────────
 RUN rpm-ostree install \
     hyprland \
