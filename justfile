@@ -37,6 +37,23 @@ check-upstream:
 clean:
     podman rmi {{IMAGE}} 2>/dev/null || true
 
+# ── Release ───────────────────────────────────────────────────────────────────
+
+# Tag a release and trigger the disk image build in CI
+# Usage: just release v0.1.0
+release VERSION:
+    git tag -a {{VERSION}} -m "Release {{VERSION}}"
+    git push origin {{VERSION}}
+    @echo "Tagged {{VERSION}} — GitHub Actions will build the qcow2 and ISO."
+    @echo "Track progress: gh run watch"
+
+# Download the latest release artifacts (qcow2 + ISO) from GitHub
+download-release:
+    gh release download --pattern "*.qcow2.zst" --dir vm/
+    gh release download --pattern "*.iso" --dir vm/
+    @echo "Decompressing qcow2..."
+    zstd -d vm/*.qcow2.zst -o {{VM_DISK}}
+
 # ── VM management (QEMU x86_64 on Apple Silicon) ─────────────────────────────
 
 # Download the Fedora Silverblue x86_64 ISO
@@ -45,7 +62,11 @@ vm-download-iso:
     set -euo pipefail
     mkdir -p vm
     BASE="https://download.fedoraproject.org/pub/fedora/linux/releases/{{FEDORA_VER}}/Silverblue/x86_64/iso"
-    ISO=$(curl -s "$BASE/" | grep -oE 'Fedora-Silverblue[^"]+\.iso' | head -1)
+    ISO=$(curl -sL "$BASE/" | grep -oE 'Fedora-Silverblue[^"]+\.iso' | head -1)
+    if [[ -z "$ISO" ]]; then
+        echo "Error: could not find ISO at $BASE/"
+        exit 1
+    fi
     echo "Downloading $ISO ..."
     curl -L --progress-bar -o {{VM_ISO}} "$BASE/$ISO"
     echo "Saved to {{VM_ISO}}"

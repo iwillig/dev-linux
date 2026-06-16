@@ -1,0 +1,160 @@
+name: Build Disk Images
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      image_type:
+        description: "Image type to build"
+        required: true
+        default: "qcow2"
+        type: choice
+        options:
+          - qcow2
+          - anaconda-iso
+          - both
+
+env:
+  IMAGE_NAME: dev-linux
+  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+
+jobs:
+  build-oci:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_ref: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push OCI image
+        id: build
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ github.ref_name }} latest
+          containerfiles: ./Containerfile
+          oci: true
+
+      - name: Push to GHCR
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build.outputs.image }}
+          tags: ${{ steps.build.outputs.tags }}
+          registry: ${{ env.IMAGE_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+  build-disk-images:
+    runs-on: ubuntu-latest
+    needs: build-oci
+    permissions:
+      contents: write
+      packages: read
+
+    steps:
+      - name: Free disk space
+        # GitHub runners have ~14GB; Docker images, Android SDK, .NET eat most of it
+        run: |
+          sudo docker rmi $(docker images -aq) 2>/dev/null || true
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
+          df -h
+
+      - name: Log in to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | \
+            sudo podman login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build qcow2 (for QEMU testing)
+        if: >
+          github.event_name == 'push' ||
+          inputs.image_type == 'qcow2' ||
+          inputs.image_type == 'both'
+        run: |
+          mkdir -p output
+          sudo podman run \
+            --rm \
+            --privileged \
+            --pull=newer \
+            -v $(pwd)/output:/output \
+            quay.io/centos-bootc/bootc-image-builder:latest \
+            --type qcow2 \
+            ${{ needs.build-oci.outputs.image_ref }}
+          ls -lh output/qcow2/
+
+      - name: Build anaconda ISO (for USB install)
+        if: >
+          github.event_name == 'push' ||
+          inputs.image_type == 'anaconda-iso' ||
+          inputs.image_type == 'both'
+        run: |
+          mkdir -p output
+          sudo podman run \
+            --rm \
+            --privileged \
+            --pull=newer \
+            -v $(pwd)/output:/output \
+            quay.io/centos-bootc/bootc-image-builder:latest \
+            --type anaconda-iso \
+            ${{ needs.build-oci.outputs.image_ref }}
+          ls -lh output/bootiso/
+
+      - name: Compress artifacts
+        run: |
+          if [ -f output/qcow2/disk.qcow2 ]; then
+            zstd -T0 -9 output/qcow2/disk.qcow2 \
+              -o output/dev-linux-${{ github.ref_name }}.qcow2.zst
+          fi
+          if [ -f output/bootiso/disk.iso ]; then
+            cp output/bootiso/disk.iso \
+              output/dev-linux-${{ github.ref_name }}.iso
+          fi
+          ls -lh output/*.qcow2.zst output/*.iso 2>/dev/null || true
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: disk-images-${{ github.ref_name }}
+          path: |
+            output/*.qcow2.zst
+            output/*.iso
+          retention-days: 30
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            output/*.qcow2.zst
+            output/*.iso
+          generate_release_notes: true
+          body: |
+            ## Installation
+
+            **Framework laptop (bare metal):**
+            Download `dev-linux-${{ github.ref_name }}.iso`, write to USB:
+            ```bash
+            sudo dd if=dev-linux-${{ github.ref_name }}.iso of=/dev/sdX bs=4M status=progress
+            ```
+            Boot from USB, run the Anaconda installer.
+
+            **QEMU testing (macOS):**
+            Download and decompress the qcow2:
+            ```bash
+            zstd -d dev-linux-${{ github.ref_name }}.qcow2.zst
+            # Then in your dev-linux repo:
+            cp dev-linux-${{ github.ref_name }}.qcow2 vm/dev-linux.qcow2
+            just vm-run
+            ```
