@@ -45,7 +45,7 @@ vm-download-iso:
     set -euo pipefail
     mkdir -p vm
     BASE="https://download.fedoraproject.org/pub/fedora/linux/releases/{{FEDORA_VER}}/Silverblue/x86_64/iso"
-    ISO=$(curl -s "$BASE/" | grep -oP 'Fedora-Silverblue[^"]+\.iso' | head -1)
+    ISO=$(curl -s "$BASE/" | grep -oE 'Fedora-Silverblue[^"]+\.iso' | head -1)
     echo "Downloading $ISO ..."
     curl -L --progress-bar -o {{VM_ISO}} "$BASE/$ISO"
     echo "Saved to {{VM_ISO}}"
