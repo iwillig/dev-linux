@@ -1,8 +1,8 @@
 ARG BASE_IMAGE="ghcr.io/ublue-os/bluefin-dx"
-# gts = Fedora 43, which has libdisplay-info-0.2.0 (provides .so.2) needed by
-# the solopasha COPR's aquamarine. Switch back to "stable" once the COPR is
-# rebuilt against libdisplay-info-0.3.0 (fc44).
-ARG TAG="gts"
+# Pinned to Fedora 43: gts is also fc44, so we use the explicit tag.
+# libdisplay-info-0.2.0 on fc43 provides .so.2 needed by the solopasha COPR's
+# aquamarine. Switch to "stable" once the COPR rebuilds for fc44.
+ARG TAG="43"
 
 FROM ${BASE_IMAGE}:${TAG}
 
