@@ -18,6 +18,7 @@ RUN dnf5 group install -y development-tools && dnf5 clean all && \
 
 RUN rpm-ostree install \
     emacs \
+    python3 \
     neovim \
     tmux \
     pandoc \
