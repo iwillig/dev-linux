@@ -25,6 +25,7 @@ RUN rpm-ostree install \
     aspell-en \
     fish \
     alacritty \
+    firefox \
     fd-find \
     bat \
     eza \
