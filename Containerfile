@@ -30,6 +30,7 @@ RUN rpm-ostree install \
     stow \
     the_silver_searcher \
     rlwrap \
+    xclip \
     fd-find \
     bat \
     eza \
