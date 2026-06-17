@@ -12,10 +12,19 @@ RUN rpm-ostree install \
     && ostree container commit
 
 # ── Developer tooling ────────────────────────────────────────────────────────
+# rpm-ostree doesn't support @group syntax in container builds; use dnf5
+RUN dnf5 group install -y development-tools && dnf5 clean all && \
+    ostree container commit
+
 RUN rpm-ostree install \
     emacs \
     neovim \
     tmux \
+    pandoc \
+    aspell \
+    aspell-en \
+    fish \
+    alacritty \
     fd-find \
     bat \
     eza \
@@ -25,6 +34,28 @@ RUN rpm-ostree install \
     yq \
     httpie \
     && ostree container commit
+
+# Set fish as the default shell for new users (read by Anaconda at install time)
+RUN sed -i 's|^SHELL=.*|SHELL=/usr/bin/fish|' /etc/default/useradd && \
+    ostree container commit
+
+# zellij: not in Fedora 44 repos, install musl binary from GitHub releases
+RUN curl -fsSL \
+    "https://github.com/zellij-org/zellij/releases/latest/download/zellij-x86_64-unknown-linux-musl.tar.gz" \
+    | tar -xz -C /usr/bin zellij && \
+    ostree container commit
+
+# Nyxt browser — not in Fedora repos; ships as an AppImage inside a tarball
+# /opt is a symlink in ostree images; use /usr/lib instead
+RUN curl -fsSL \
+      "https://github.com/atlas-engineer/nyxt/releases/latest/download/Linux-Nyxt-x86_64.tar.gz" \
+      -o /tmp/nyxt.tar.gz && \
+    mkdir -p /usr/lib/nyxt && \
+    tar -xzf /tmp/nyxt.tar.gz -C /usr/lib/nyxt && \
+    chmod +x /usr/lib/nyxt/*.AppImage && \
+    ln -sf /usr/lib/nyxt/Nyxt-x86_64.AppImage /usr/bin/nyxt && \
+    rm /tmp/nyxt.tar.gz && \
+    ostree container commit
 
 # starship: not in Fedora repos; /usr/local/bin doesn't exist in ostree images
 RUN curl -fsSL \

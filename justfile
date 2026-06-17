@@ -2,7 +2,7 @@ IMAGE        := "localhost/dev-linux:local"
 VM_DISK      := "vm/dev-linux.qcow2"
 VM_ISO       := "vm/fedora-silverblue.iso"
 OVMF         := "/opt/homebrew/share/qemu/edk2-x86_64-code.fd"
-FEDORA_VER   := "42"
+FEDORA_VER   := "44"
 VM_RAM       := "8G"
 VM_CPUS      := "8"
 VM_SSH_PORT  := "2222"
@@ -63,7 +63,8 @@ usb-write DEVICE:
     [[ "$confirm" == "yes" ]] || { echo "Aborted."; exit 1; }
     echo "Unmounting {{DEVICE}}..."
     diskutil unmountDisk {{DEVICE}}
-    RAW="${{DEVICE/disk/rdisk}}"
+    _dev="{{DEVICE}}"
+    RAW="${_dev/disk/rdisk}"
     echo "Writing ISO to $RAW (this will take a few minutes)..."
     sudo dd if={{VM_ISO}} of=$RAW bs=4m
     sync
