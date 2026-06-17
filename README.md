@@ -9,7 +9,8 @@ A custom Fedora Atomic image based on [Bluefin DX](https://projectbluefin.io/), 
 - **Terminal**: Alacritty, Zellij
 - **Editors**: Emacs, Neovim
 - **Dev tools**: gcc/make/gdb (Development Tools group), pandoc, aspell, fd, bat, eza, zoxide, fzf, jq, yq, httpie, zellij
-- **Browser**: Nyxt
+- **Browsers**: Firefox, Nyxt
+- **Apps**: 1Password
 - **Fonts**: JetBrains Mono Nerd Font, Cascadia Code, Inter — with tuned subpixel rendering
 - **Framework extras**: thermald, fprintd (fingerprint reader), powertop
 
@@ -60,12 +61,27 @@ sudo dd if=vm/dev-linux-v0.1.0.iso of=/dev/disk4 bs=4m status=progress
 3. Follow the Anaconda installer — partition as you like, set username/password
 4. Reboot — you're running your custom image
 
-### Staying up to date
+### Step 5 — Updating after installation
 
-Push changes to `main` → CI rebuilds the image → on the Framework:
+Whenever you add or change packages, push to `main`, wait for CI to finish, then on the Framework:
 
 ```bash
 sudo bootc update
+sudo reboot
+```
+
+`bootc update` pulls only the changed layers from GHCR (fast after the first pull), stages the new image alongside the running one, and activates it on next boot. Your data in `/home` is untouched.
+
+To check whether an update is available without applying it:
+
+```bash
+sudo bootc status
+```
+
+To roll back to the previous image if something goes wrong:
+
+```bash
+sudo bootc rollback
 sudo reboot
 ```
 
@@ -77,6 +93,13 @@ If you already have Fedora Silverblue installed, you can rebase to this image di
 
 ```bash
 sudo bootc switch ghcr.io/iwillig/dev-linux:latest
+sudo reboot
+```
+
+After the initial switch, future updates work the same way:
+
+```bash
+sudo bootc update
 sudo reboot
 ```
 
