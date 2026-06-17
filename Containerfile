@@ -26,6 +26,10 @@ RUN rpm-ostree install \
     fish \
     alacritty \
     firefox \
+    sqlite-devel \
+    stow \
+    the_silver_searcher \
+    rlwrap \
     fd-find \
     bat \
     eza \
