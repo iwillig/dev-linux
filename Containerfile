@@ -94,16 +94,6 @@ RUN curl -fsSL \
     | tar -xz -C /usr/bin starship && \
     ostree container commit
 
-# ── 1Password ────────────────────────────────────────────────────────────────
-# Post-install scriptlets (polkit/systemd registration) fail in container builds;
-# noscripts skips them — they run correctly on the deployed system at first boot.
-RUN rpm --import https://downloads.1password.com/linux/keys/1password.asc && \
-    mkdir -p /var/opt && \
-    dnf5 install -y --setopt=tsflags=noscripts \
-      https://downloads.1password.com/linux/rpm/stable/x86_64/1password-latest.rpm && \
-    dnf5 clean all && \
-    ostree container commit
-
 # ── Fonts ─────────────────────────────────────────────────────────────────────
 RUN rpm-ostree install \
     jetbrains-mono-fonts \
@@ -132,4 +122,6 @@ RUN NERD_FONT_VERSION="v3.2.1" && \
 # ── Better font rendering ─────────────────────────────────────────────────────
 COPY config/files/ /
 
-RUN ostree container commit
+# Enable first-boot services
+RUN systemctl enable install-1password.service && \
+    ostree container commit
