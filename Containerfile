@@ -57,6 +57,15 @@ RUN curl -fsSL \
     rm /tmp/nyxt.tar.gz && \
     ostree container commit
 
+# Homebrew — cloned to /home/linuxbrew/.linuxbrew (/home → /var/home in ostree)
+# The image's /var is used to initialize a fresh install, so brew is available on first boot.
+# wheel group owns the prefix so the default admin user can run brew install without sudo.
+RUN mkdir -p /var/home/linuxbrew && \
+    git clone --depth=1 https://github.com/Homebrew/brew /var/home/linuxbrew/.linuxbrew && \
+    chown -R root:wheel /var/home/linuxbrew/.linuxbrew && \
+    chmod -R g+rwX /var/home/linuxbrew/.linuxbrew && \
+    ostree container commit
+
 # starship: not in Fedora repos; /usr/local/bin doesn't exist in ostree images
 RUN curl -fsSL \
     "https://github.com/starship/starship/releases/latest/download/starship-x86_64-unknown-linux-musl.tar.gz" \
