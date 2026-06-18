@@ -40,6 +40,9 @@ RUN rpm-ostree install \
     jq \
     yq \
     httpie \
+    ripgrep \
+    btop \
+    tldr \
     && ostree container commit
 
 # GitHub CLI — official RPM repo; not in Fedora repos
@@ -57,6 +60,19 @@ RUN sed -i 's|^SHELL=.*|SHELL=/usr/bin/fish|' /etc/default/useradd && \
 RUN curl -fsSL \
     "https://github.com/zellij-org/zellij/releases/latest/download/zellij-x86_64-unknown-linux-musl.tar.gz" \
     | tar -xz -C /usr/bin zellij && \
+    ostree container commit
+
+# lazygit: git TUI, not in Fedora repos
+RUN LAZYGIT_VERSION=$(curl -sL "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | \
+      jq -r '.tag_name') && \
+    curl -fsSL "https://github.com/jesseduffield/lazygit/releases/download/${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION#v}_Linux_x86_64.tar.gz" \
+    | tar -xz -C /usr/bin lazygit && \
+    ostree container commit
+
+# fastfetch: system info tool, binary tarball ships under usr/bin/
+RUN curl -fsSL \
+    "https://github.com/fastfetch-cli/fastfetch/releases/latest/download/fastfetch-linux-amd64.tar.gz" \
+    | tar -xz -C / usr/bin/fastfetch && \
     ostree container commit
 
 # Nyxt browser — not in Fedora repos; ships as an AppImage inside a tarball
@@ -114,6 +130,10 @@ RUN dnf5 install -y nodejs && \
 RUN npm install -g --prefix /usr --ignore-scripts \
     typescript \
     typescript-language-server && \
+    ostree container commit
+
+# Claude Code CLI
+RUN npm install -g --prefix /usr @anthropic-ai/claude-code && \
     ostree container commit
 
 # Clojure — use dnf5 so java is immediately available when the installer runs;
