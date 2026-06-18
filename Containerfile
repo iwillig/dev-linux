@@ -42,6 +42,13 @@ RUN rpm-ostree install \
     httpie \
     && ostree container commit
 
+# GitHub CLI — official RPM repo; not in Fedora repos
+RUN curl -fsSL https://cli.github.com/packages/rpm/gh-cli.repo \
+      -o /etc/yum.repos.d/gh-cli.repo && \
+    dnf5 install -y gh && \
+    dnf5 clean all && \
+    ostree container commit
+
 # Set fish as the default shell for new users (read by Anaconda at install time)
 RUN sed -i 's|^SHELL=.*|SHELL=/usr/bin/fish|' /etc/default/useradd && \
     ostree container commit
