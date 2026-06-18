@@ -69,10 +69,10 @@ RUN LAZYGIT_VERSION=$(curl -sL "https://api.github.com/repos/jesseduffield/lazyg
     | tar -xz -C /usr/bin lazygit && \
     ostree container commit
 
-# fastfetch: system info tool, binary tarball ships under usr/bin/
+# fastfetch: tarball is fastfetch-linux-amd64/{usr/bin,usr/share,...}; strip the top dir
 RUN curl -fsSL \
     "https://github.com/fastfetch-cli/fastfetch/releases/latest/download/fastfetch-linux-amd64.tar.gz" \
-    | tar -xz -C / usr/bin/fastfetch && \
+    | tar -xz --strip-components=1 -C / && \
     ostree container commit
 
 # Nyxt browser — not in Fedora repos; ships as an AppImage inside a tarball
