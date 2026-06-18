@@ -103,6 +103,12 @@ RUN dnf5 install -y nodejs && \
     npm install -g --ignore-scripts @earendil-works/pi-coding-agent && \
     ostree container commit
 
+# TypeScript toolchain — compiler + LSP server for Emacs/Neovim editor integration
+RUN npm install -g --ignore-scripts \
+    typescript \
+    typescript-language-server && \
+    ostree container commit
+
 # Clojure — Java from Fedora repos; use --prefix /usr (ostree has no /usr/local/bin)
 RUN rpm-ostree install java-21-openjdk && \
     curl -fsSL "https://github.com/clojure/brew-install/releases/latest/download/linux-install.sh" \
