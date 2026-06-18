@@ -1,7 +1,6 @@
 IMAGE        := "localhost/dev-linux:local"
 VM_DISK      := "vm/dev-linux.qcow2"
 VM_ISO       := "vm/fedora-silverblue.iso"
-OVMF         := "/opt/homebrew/share/qemu/edk2-x86_64-code.fd"
 FEDORA_VER   := "44"
 VM_RAM       := "8G"
 VM_CPUS      := "8"
@@ -29,6 +28,45 @@ check-fonts:
 check-packages:
     podman run --rm --platform linux/amd64 {{IMAGE}} rpm -qa | sort
 
+# Download ShellSpec into vendor/shellspec/ (one-time setup)
+test-install:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdir -p vendor/shellspec
+    curl -fsSL https://github.com/shellspec/shellspec/raw/master/install.sh \
+        | sh -s -- --yes --prefix "${PWD}/vendor/shellspec"
+    echo "ShellSpec installed to vendor/shellspec/"
+
+# Run the full ShellSpec suite inside the built image
+test: build
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [[ ! -f vendor/shellspec/lib/shellspec/shellspec ]]; then
+        just test-install
+    fi
+    podman run --rm --platform linux/amd64 \
+        --workdir /workspace \
+        -v "$(pwd)/spec:/workspace/spec:ro,z" \
+        -v "$(pwd)/.shellspec:/workspace/.shellspec:ro,z" \
+        -v "$(pwd)/vendor/shellspec:/shellspec:ro,z" \
+        {{IMAGE}} \
+        /shellspec/lib/shellspec/shellspec
+
+# Run specs against the already-built image (skip the podman build step)
+test-fast:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [[ ! -f vendor/shellspec/lib/shellspec/shellspec ]]; then
+        just test-install
+    fi
+    podman run --rm --platform linux/amd64 \
+        --workdir /workspace \
+        -v "$(pwd)/spec:/workspace/spec:ro,z" \
+        -v "$(pwd)/.shellspec:/workspace/.shellspec:ro,z" \
+        -v "$(pwd)/vendor/shellspec:/shellspec:ro,z" \
+        {{IMAGE}} \
+        /shellspec/lib/shellspec/shellspec
+
 # Pull latest upstream to check for updates
 check-upstream:
     podman pull --platform linux/amd64 ghcr.io/ublue-os/bluefin-dx:stable
@@ -37,42 +75,59 @@ check-upstream:
 clean:
     podman rmi {{IMAGE}} 2>/dev/null || true
 
+# ── Live system testing (Linux only) ─────────────────────────────────────────
+
+# Build and stage the local image as the next boot target.
+# After rebooting you're running your changes. Roll back with:
+#   sudo bootc rollback && sudo reboot
+local-switch: build
+    @echo "Exporting image to /tmp/dev-linux-oci ..."
+    podman save --format oci-dir -o /tmp/dev-linux-oci {{IMAGE}}
+    @echo "Staging local image for next boot..."
+    sudo bootc switch --transport oci /tmp/dev-linux-oci
+    @echo ""
+    @echo "Run: sudo reboot"
+    @echo "To roll back: sudo bootc rollback && sudo reboot"
+
 # ── Framework installation ────────────────────────────────────────────────────
 
-# List disks to find your USB device before writing
+# List block devices to find your USB drive
 usb-list:
-    diskutil list external
+    #!/usr/bin/env bash
+    if [[ "$(uname)" == "Darwin" ]]; then
+        diskutil list external
+    else
+        lsblk -d -o NAME,SIZE,MODEL
+    fi
 
-# Write the Fedora Silverblue ISO to a USB drive (macOS)
-# Usage: just usb-write /dev/disk4
-# Find your USB device first with: just usb-list
+# Write an ISO to a USB drive
+# Usage: just usb-write /dev/sdb   (Linux)
+#        just usb-write /dev/disk4  (macOS)
 usb-write DEVICE:
     #!/usr/bin/env bash
     set -euo pipefail
-    if [[ ! -f "{{VM_ISO}}" ]]; then
-        echo "ISO not found at {{VM_ISO}}"
-        echo "Run: just vm-download-iso"
+    ISO=$(ls vm/*.iso 2>/dev/null | head -1)
+    if [[ -z "$ISO" ]]; then
+        echo "No ISO found in vm/ — run: just download-release"
         exit 1
     fi
     echo ""
-    echo "  ISO:    {{VM_ISO}}"
+    echo "  ISO:    $ISO"
     echo "  Target: {{DEVICE}}"
     echo ""
     echo "WARNING: ALL DATA ON {{DEVICE}} WILL BE PERMANENTLY DESTROYED."
     read -p "  Type 'yes' to continue: " confirm
     [[ "$confirm" == "yes" ]] || { echo "Aborted."; exit 1; }
-    echo "Unmounting {{DEVICE}}..."
-    diskutil unmountDisk {{DEVICE}}
-    _dev="{{DEVICE}}"
-    RAW="${_dev/disk/rdisk}"
-    echo "Writing ISO to $RAW (this will take a few minutes)..."
-    sudo dd if={{VM_ISO}} of=$RAW bs=4m
+    if [[ "$(uname)" == "Darwin" ]]; then
+        diskutil unmountDisk {{DEVICE}}
+        _dev="{{DEVICE}}"
+        RAW="${_dev/disk/rdisk}"
+        sudo dd if="$ISO" of="$RAW" bs=4m
+    else
+        sudo dd if="$ISO" of={{DEVICE}} bs=4M status=progress conv=fsync
+    fi
     sync
-    echo ""
-    echo "Done. Eject the USB and boot your Framework from it."
-    echo "After installing Fedora Silverblue, run the switch command:"
-    echo ""
-    echo "  sudo bootc switch ghcr.io/iwillig/dev-linux:latest"
+    echo "Done."
 
 # ── Release ───────────────────────────────────────────────────────────────────
 
@@ -91,7 +146,11 @@ download-release:
     @echo "Decompressing qcow2..."
     zstd -d vm/*.qcow2.zst -o {{VM_DISK}}
 
-# ── VM management (QEMU x86_64 on Apple Silicon) ─────────────────────────────
+# ── VM management (QEMU x86_64 — macOS and Linux) ───────────────────────────
+#
+# Linux uses KVM (-accel kvm) and GTK display; OVMF requires a writable VARS
+# copy at vm/OVMF_VARS.fd (created automatically by vm-create).
+# macOS (Apple Silicon) uses TCG software emulation and the Cocoa display.
 
 # Download the Fedora Silverblue x86_64 ISO
 vm-download-iso:
@@ -108,52 +167,79 @@ vm-download-iso:
     curl -L --progress-bar -o {{VM_ISO}} "$BASE/$ISO"
     echo "Saved to {{VM_ISO}}"
 
-# Create a fresh 60GB VM disk
+# Create a fresh 60GB VM disk (also initialises OVMF_VARS.fd on Linux)
 vm-create:
+    #!/usr/bin/env bash
+    set -euo pipefail
     mkdir -p vm
     qemu-img create -f qcow2 {{VM_DISK}} 60G
     echo "Created {{VM_DISK}}"
+    if [[ "$(uname)" != "Darwin" ]] && [[ ! -f vm/OVMF_VARS.fd ]]; then
+        cp /usr/share/edk2/ovmf/OVMF_VARS.fd vm/OVMF_VARS.fd
+        echo "Initialised vm/OVMF_VARS.fd (EFI variable store)"
+    fi
 
 # Boot the Fedora installer (run once to install the OS into the disk)
 vm-install:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [[ "$(uname)" == "Darwin" ]]; then
+        OVMF_ARGS="-drive if=pflash,format=raw,file=/opt/homebrew/share/qemu/edk2-x86_64-code.fd,readonly=on"
+        ACCEL_ARGS="-accel tcg,thread=multi -cpu qemu64"
+        DISPLAY_ARGS="-display cocoa,show-cursor=on"
+    else
+        OVMF_ARGS="-drive if=pflash,format=raw,file=/usr/share/edk2/ovmf/OVMF_CODE.fd,readonly=on -drive if=pflash,format=raw,file=vm/OVMF_VARS.fd"
+        ACCEL_ARGS="-accel kvm -cpu host"
+        DISPLAY_ARGS="-display gtk"
+    fi
     qemu-system-x86_64 \
-        -accel tcg,thread=multi \
-        -cpu qemu64 \
+        $ACCEL_ARGS \
         -machine q35 \
         -m {{VM_RAM}} \
         -smp {{VM_CPUS}} \
-        -drive if=pflash,format=raw,file={{OVMF}},readonly=on \
+        $OVMF_ARGS \
         -drive file={{VM_DISK}},if=virtio,cache=writeback \
         -cdrom {{VM_ISO}} \
         -boot d \
         -netdev user,id=net0,hostfwd=tcp::{{VM_SSH_PORT}}-:22 \
         -device virtio-net-pci,netdev=net0 \
         -device virtio-vga \
-        -display cocoa,show-cursor=on \
+        $DISPLAY_ARGS \
         -usb -device usb-tablet
 
 # Boot the installed VM (normal run, no ISO)
 vm-run:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [[ "$(uname)" == "Darwin" ]]; then
+        OVMF_ARGS="-drive if=pflash,format=raw,file=/opt/homebrew/share/qemu/edk2-x86_64-code.fd,readonly=on"
+        ACCEL_ARGS="-accel tcg,thread=multi -cpu qemu64"
+        DISPLAY_ARGS="-display cocoa,show-cursor=on"
+    else
+        OVMF_ARGS="-drive if=pflash,format=raw,file=/usr/share/edk2/ovmf/OVMF_CODE.fd,readonly=on -drive if=pflash,format=raw,file=vm/OVMF_VARS.fd"
+        ACCEL_ARGS="-accel kvm -cpu host"
+        DISPLAY_ARGS="-display gtk"
+    fi
     qemu-system-x86_64 \
-        -accel tcg,thread=multi \
-        -cpu qemu64 \
+        $ACCEL_ARGS \
         -machine q35 \
         -m {{VM_RAM}} \
         -smp {{VM_CPUS}} \
-        -drive if=pflash,format=raw,file={{OVMF}},readonly=on \
+        $OVMF_ARGS \
         -drive file={{VM_DISK}},if=virtio,cache=writeback \
         -netdev user,id=net0,hostfwd=tcp::{{VM_SSH_PORT}}-:22 \
         -device virtio-net-pci,netdev=net0 \
         -device virtio-vga \
-        -display cocoa,show-cursor=on \
+        $DISPLAY_ARGS \
         -usb -device usb-tablet
 
 # SSH into the running VM
 vm-ssh:
     ssh -p {{VM_SSH_PORT}} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null localhost
 
-# Load the locally-built podman image into the VM via SSH
-# The VM must be running. Run 'just vm-ssh' first to get the password.
+# Push the locally-built podman image into the VM and switch to it
+# The VM must be running. After it loads, run inside the VM:
+#   sudo bootc switch --transport containers-storage localhost/dev-linux:local
 vm-load-local:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -164,7 +250,11 @@ vm-load-local:
     echo "Loading into podman on VM..."
     ssh -p {{VM_SSH_PORT}} -o StrictHostKeyChecking=no localhost \
         "podman load -i /tmp/dev-linux-local.tar && rm /tmp/dev-linux-local.tar"
-    echo "Done — inside the VM run: sudo bootc switch --transport oci docker://{{IMAGE}}"
+    rm /tmp/dev-linux-local.tar
+    echo ""
+    echo "Inside the VM run:"
+    echo "  sudo bootc switch --transport containers-storage {{IMAGE}}"
+    echo "  sudo reboot"
 
 # Take a snapshot of the VM disk (before switching images — easy rollback)
 vm-snapshot NAME="before-switch":

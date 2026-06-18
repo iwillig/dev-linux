@@ -57,6 +57,23 @@ jobs:
           containerfiles: ./Containerfile
           oci: true
 
+      - name: Install ShellSpec
+        run: |
+          mkdir -p vendor/shellspec
+          curl -fsSL https://github.com/shellspec/shellspec/raw/master/install.sh \
+            | sh -s -- --yes --prefix "${GITHUB_WORKSPACE}/vendor/shellspec"
+
+      - name: Run tests
+        run: |
+          IMAGE_REF=$(echo "${{ steps.build.outputs.tags }}" | tr -s '[:space:]' '\n' | grep -v '^$' | head -1)
+          podman run --rm \
+            --workdir /workspace \
+            -v "${GITHUB_WORKSPACE}/spec:/workspace/spec:ro" \
+            -v "${GITHUB_WORKSPACE}/.shellspec:/workspace/.shellspec:ro" \
+            -v "${GITHUB_WORKSPACE}/vendor/shellspec:/shellspec:ro" \
+            "${IMAGE_REF}" \
+            /shellspec/lib/shellspec/shellspec
+
       - name: Push to GHCR
         # Only push on main branch, not PRs
         if: github.event_name != 'pull_request'

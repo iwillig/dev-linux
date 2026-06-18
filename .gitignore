@@ -3,3 +3,4 @@
 *.tar
 vm/*.qcow2
 vm/*.iso
+vendor/shellspec/

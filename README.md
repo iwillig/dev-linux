@@ -1,6 +1,8 @@
 # dev-linux
 
-A custom Fedora Atomic image based on [Bluefin DX](https://projectbluefin.io/), optimized for development on a Framework Intel laptop.
+A custom Fedora Atomic image based on [Bluefin
+DX](https://projectbluefin.io/), optimized for development on a
+Framework Intel laptop.
 
 ## What's included
 
@@ -18,7 +20,11 @@ A custom Fedora Atomic image based on [Bluefin DX](https://projectbluefin.io/), 
 
 ## Installing on the Framework laptop
 
-The recommended path uses a custom installer ISO built from your exact OCI image via [`bootc-image-builder`](https://github.com/osbuild/bootc-image-builder). You boot from it and the Anaconda installer puts your image directly onto disk — no internet required on the target machine after that.
+The recommended path uses a custom installer ISO built from your exact
+OCI image via
+[`bootc-image-builder`](https://github.com/osbuild/bootc-image-builder). You
+boot from it and the Anaconda installer puts your image directly onto
+disk — no internet required on the target machine after that.
 
 ### Step 1 — Make the GHCR image public
 
@@ -70,7 +76,9 @@ sudo bootc update
 sudo reboot
 ```
 
-`bootc update` pulls only the changed layers from GHCR (fast after the first pull), stages the new image alongside the running one, and activates it on next boot. Your data in `/home` is untouched.
+`bootc update` pulls only the changed layers from GHCR (fast after the
+first pull), stages the new image alongside the running one, and
+activates it on next boot. Your data in `/home` is untouched.
 
 To check whether an update is available without applying it:
 
@@ -89,7 +97,8 @@ sudo reboot
 
 ## Alternative: bootc switch from stock Silverblue
 
-If you already have Fedora Silverblue installed, you can rebase to this image directly without a custom ISO:
+If you already have Fedora Silverblue installed, you can rebase to
+this image directly without a custom ISO:
 
 ```bash
 sudo bootc switch ghcr.io/iwillig/dev-linux:latest
@@ -105,26 +114,53 @@ sudo reboot
 
 ---
 
-## Local development (macOS)
+## Local development
 
-Requires `podman` (`brew install podman`) and `just`.
+Requires `podman` and `just`. Works on both Linux (native) and macOS.
 
 ```bash
 just build          # build amd64 image locally via podman
 just shell          # open bash inside the built image
-just check-fonts    # verify fonts installed correctly
+just test           # smoke-test: verify key commands and fonts
+just check-fonts    # list installed fonts
 just check-packages # list installed packages
 ```
+
+### Testing on Linux (live system)
+
+Since you're already running dev-linux, the fastest feedback loop is to build
+locally and switch the running system to your changes:
+
+```bash
+just local-switch   # build → export → sudo bootc switch (staged, not yet active)
+sudo reboot         # activate the new image
+```
+
+If something breaks after rebooting:
+
+```bash
+sudo bootc rollback
+sudo reboot
+```
+
+`bootc` keeps the previous image around, so rollback is instant.
+
+### Testing on macOS
+
+Requires `podman` (`brew install podman`) and `just`.
 
 ---
 
 ## QEMU testing
 
-Test the image in a VM before installing on bare metal. Downloads a stock Fedora Silverblue ISO, installs it into a QEMU disk, then you rebase to your custom image.
+Test the image in an isolated VM before installing on bare metal. Downloads a
+stock Fedora Silverblue ISO, installs it into a QEMU disk, then you rebase to
+your custom image. On Linux the VM uses KVM hardware acceleration; on macOS it
+falls back to TCG software emulation.
 
 ```bash
 just vm-download-iso   # one-time: download Fedora 44 Silverblue ISO (~2.5 GB)
-just vm-create         # one-time: create 60 GB disk
+just vm-create         # one-time: create 60 GB disk (+ init OVMF_VARS on Linux)
 just vm-install        # one-time: boot installer, follow Anaconda
 just vm-run            # start the VM
 just vm-ssh            # SSH into the running VM
@@ -140,13 +176,14 @@ To test a locally-built image without pushing to GHCR:
 just vm-snapshot          # save a rollback point
 just vm-load-local        # push local image into VM via SSH
 # Inside VM:
-sudo bootc switch --transport oci docker://localhost/dev-linux:local
+sudo bootc switch --transport containers-storage localhost/dev-linux:local
 sudo reboot
 ```
 
 ### Alternatively: use the CI-built qcow2
 
-Skip the Silverblue install step entirely by downloading the pre-built qcow2 from a release:
+Skip the Silverblue install step entirely by downloading the pre-built
+qcow2 from a release:
 
 ```bash
 just download-release   # downloads and decompresses the qcow2 into vm/
