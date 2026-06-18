@@ -101,6 +101,15 @@ RUN rpm-ostree install nodejs && \
     npm install -g --ignore-scripts @earendil-works/pi-coding-agent && \
     ostree container commit
 
+# Clojure — Java from Fedora repos; use --prefix /usr (ostree has no /usr/local/bin)
+RUN rpm-ostree install java-21-openjdk && \
+    curl -fsSL "https://github.com/clojure/brew-install/releases/latest/download/linux-install.sh" \
+      -o /tmp/clojure-install.sh && \
+    chmod +x /tmp/clojure-install.sh && \
+    /tmp/clojure-install.sh --prefix /usr && \
+    rm /tmp/clojure-install.sh && \
+    ostree container commit
+
 # Handy — open-source push-to-talk speech-to-text; not in Fedora repos
 RUN HANDY_RPM_URL=$(curl -sL "https://api.github.com/repos/cjpais/Handy/releases/latest" | \
       jq -r '.assets[] | select(.name | test("x86_64\\.rpm$")) | .browser_download_url') && \
