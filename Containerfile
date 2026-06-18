@@ -156,6 +156,12 @@ RUN HANDY_RPM_URL=$(curl -sL "https://api.github.com/repos/cjpais/Handy/releases
     rm /tmp/handy.rpm && \
     ostree container commit
 
+# ── Wine ──────────────────────────────────────────────────────────────────────
+RUN rpm-ostree install \
+    wine \
+    winetricks \
+    && ostree container commit
+
 # ── Fonts ─────────────────────────────────────────────────────────────────────
 RUN rpm-ostree install \
     jetbrains-mono-fonts \
