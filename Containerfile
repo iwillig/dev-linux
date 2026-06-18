@@ -109,8 +109,10 @@ RUN npm install -g --prefix /usr --ignore-scripts \
     typescript-language-server && \
     ostree container commit
 
-# Clojure — Java from Fedora repos; use --prefix /usr (ostree has no /usr/local/bin)
-RUN rpm-ostree install java-21-openjdk && \
+# Clojure — use dnf5 so java is immediately available when the installer runs;
+# use --prefix /usr (ostree has no /usr/local/bin)
+RUN dnf5 install -y java-25-openjdk && \
+    dnf5 clean all && \
     curl -fsSL "https://github.com/clojure/brew-install/releases/latest/download/linux-install.sh" \
       -o /tmp/clojure-install.sh && \
     chmod +x /tmp/clojure-install.sh && \
