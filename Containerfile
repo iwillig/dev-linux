@@ -96,8 +96,10 @@ RUN curl -fsSL \
     | tar -xz -C /usr/bin starship && \
     ostree container commit
 
-# Pi coding agent — Node.js from Fedora repos, Pi from npm
-RUN rpm-ostree install nodejs && \
+# Pi coding agent — use dnf5 (not rpm-ostree) so nodejs is immediately available
+# for the subsequent npm call within the same RUN step
+RUN dnf5 install -y nodejs && \
+    dnf5 clean all && \
     npm install -g --ignore-scripts @earendil-works/pi-coding-agent && \
     ostree container commit
 
