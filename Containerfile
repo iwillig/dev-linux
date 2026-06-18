@@ -100,11 +100,11 @@ RUN curl -fsSL \
 # for the subsequent npm call within the same RUN step
 RUN dnf5 install -y nodejs && \
     dnf5 clean all && \
-    npm install -g --ignore-scripts @earendil-works/pi-coding-agent && \
+    npm install -g --prefix /usr --ignore-scripts @earendil-works/pi-coding-agent && \
     ostree container commit
 
 # TypeScript toolchain — compiler + LSP server for Emacs/Neovim editor integration
-RUN npm install -g --ignore-scripts \
+RUN npm install -g --prefix /usr --ignore-scripts \
     typescript \
     typescript-language-server && \
     ostree container commit
