@@ -96,6 +96,15 @@ RUN curl -fsSL \
     | tar -xz -C /usr/bin starship && \
     ostree container commit
 
+# Handy — open-source push-to-talk speech-to-text; not in Fedora repos
+RUN HANDY_RPM_URL=$(curl -sL "https://api.github.com/repos/cjpais/Handy/releases/latest" | \
+      jq -r '.assets[] | select(.name | test("x86_64\\.rpm$")) | .browser_download_url') && \
+    curl -fsSL "$HANDY_RPM_URL" -o /tmp/handy.rpm && \
+    dnf5 install -y /tmp/handy.rpm && \
+    dnf5 clean all && \
+    rm /tmp/handy.rpm && \
+    ostree container commit
+
 # ── Fonts ─────────────────────────────────────────────────────────────────────
 RUN rpm-ostree install \
     jetbrains-mono-fonts \
