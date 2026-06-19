@@ -166,6 +166,7 @@ RUN rpm-ostree install \
     python3-gdal \
     mapnik \
     mapnik-devel \
+    python3-mapnik \
     qgis \
     grass \
     grass-devel \

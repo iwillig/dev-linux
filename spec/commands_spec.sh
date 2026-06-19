@@ -268,10 +268,10 @@ Describe 'Spatial / GIS tooling'
   End
 
   Describe 'mapnik'
-    It 'library is installed'
-      When run command sh -c 'rpm -q mapnik mapnik-devel'
+    It 'Python bindings are importable'
+      When run command python3 -c 'import mapnik; print(mapnik.version_string)'
       The status should be success
-      The output should include 'mapnik'
+      The output should be present
     End
   End
 
