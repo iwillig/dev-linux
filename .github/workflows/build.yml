@@ -39,6 +39,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install just
+        uses: extractions/setup-just@v2
+
+      - name: Assemble Containerfile from fragments
+        run: just assemble
+
+      - name: Check Containerfile is up-to-date
+        run: |
+          if ! git diff --exit-code Containerfile; then
+            echo "ERROR: Containerfile is out of sync with Containerfile.d/ — run 'just assemble' and commit."
+            exit 1
+          fi
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 

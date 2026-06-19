@@ -1,8 +1,8 @@
+# generated — edit Containerfile.d/*.containerfile instead
 ARG BASE_IMAGE="ghcr.io/ublue-os/bluefin-dx"
 ARG TAG="stable"
 
 FROM ${BASE_IMAGE}:${TAG}
-
 # ── Framework laptop & Intel-specific ────────────────────────────────────────
 RUN rpm-ostree install \
     thermald \
@@ -10,7 +10,6 @@ RUN rpm-ostree install \
     fprintd-pam \
     powertop \
     && ostree container commit
-
 # ── Developer tooling ────────────────────────────────────────────────────────
 # rpm-ostree doesn't support @group syntax in container builds; use dnf5
 RUN dnf5 group install -y development-tools && dnf5 clean all && \
@@ -55,7 +54,6 @@ RUN curl -fsSL https://cli.github.com/packages/rpm/gh-cli.repo \
 # Set fish as the default shell for new users (read by Anaconda at install time)
 RUN sed -i 's|^SHELL=.*|SHELL=/usr/bin/fish|' /etc/default/useradd && \
     ostree container commit
-
 # zellij: not in Fedora 44 repos, install musl binary from GitHub releases
 RUN curl -fsSL \
     "https://github.com/zellij-org/zellij/releases/latest/download/zellij-x86_64-unknown-linux-musl.tar.gz" \
@@ -75,6 +73,11 @@ RUN curl -fsSL \
     | tar -xz --strip-components=1 -C / && \
     ostree container commit
 
+# starship: not in Fedora repos; /usr/local/bin doesn't exist in ostree images
+RUN curl -fsSL \
+    "https://github.com/starship/starship/releases/latest/download/starship-x86_64-unknown-linux-musl.tar.gz" \
+    | tar -xz -C /usr/bin starship && \
+    ostree container commit
 # Nyxt browser — not in Fedora repos; ships as an AppImage inside a tarball
 # /opt is a symlink in ostree images; use /usr/lib instead
 RUN curl -fsSL \
@@ -86,7 +89,6 @@ RUN curl -fsSL \
     ln -sf /usr/lib/nyxt/Nyxt-x86_64.AppImage /usr/bin/nyxt && \
     rm /tmp/nyxt.tar.gz && \
     ostree container commit
-
 # Homebrew — cloned to /home/linuxbrew/.linuxbrew (/home → /var/home in ostree)
 # The image's /var is used to initialize a fresh install, so brew is available on first boot.
 # wheel group owns the prefix so the default admin user can run brew install without sudo.
@@ -112,13 +114,6 @@ RUN mkdir -p /var/roothome && \
     curl -fsSL "https://raw.githubusercontent.com/reitzig/sdkman-for-fish/main/completions/sdk.fish" \
       -o /etc/fish/completions/sdk.fish && \
     ostree container commit
-
-# starship: not in Fedora repos; /usr/local/bin doesn't exist in ostree images
-RUN curl -fsSL \
-    "https://github.com/starship/starship/releases/latest/download/starship-x86_64-unknown-linux-musl.tar.gz" \
-    | tar -xz -C /usr/bin starship && \
-    ostree container commit
-
 # Pi coding agent — use dnf5 (not rpm-ostree) so nodejs is immediately available
 # for the subsequent npm call within the same RUN step
 RUN dnf5 install -y nodejs && \
@@ -146,7 +141,6 @@ RUN dnf5 install -y java-25-openjdk && \
     /tmp/clojure-install.sh --prefix /usr && \
     rm /tmp/clojure-install.sh && \
     ostree container commit
-
 # Handy — open-source push-to-talk speech-to-text; not in Fedora repos
 # gtk-layer-shell is a runtime dependency missing from the handy RPM metadata
 RUN dnf5 install -y gtk-layer-shell && \
@@ -157,7 +151,6 @@ RUN dnf5 install -y gtk-layer-shell && \
     dnf5 clean all && \
     rm /tmp/handy.rpm && \
     ostree container commit
-
 # ── Spatial / GIS tooling ─────────────────────────────────────────────────────
 RUN rpm-ostree install \
     gdal \
@@ -178,13 +171,11 @@ RUN rpm-ostree install \
     libspatialite-devel \
     spatialite-tools \
     && ostree container commit
-
 # ── Wine ──────────────────────────────────────────────────────────────────────
 RUN rpm-ostree install \
     wine \
     winetricks \
     && ostree container commit
-
 # ── Fonts ─────────────────────────────────────────────────────────────────────
 RUN rpm-ostree install \
     jetbrains-mono-fonts \
@@ -209,7 +200,6 @@ RUN NERD_FONT_VERSION="v3.2.1" && \
     | tar -xJ -C /usr/share/fonts/nerd-fonts/JetBrainsMono && \
     fc-cache -f && \
     ostree container commit
-
 # ── Better font rendering ─────────────────────────────────────────────────────
 COPY config/files/ /
 

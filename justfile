@@ -8,12 +8,19 @@ VM_SSH_PORT  := "2222"
 
 # ── Image build ───────────────────────────────────────────────────────────────
 
+# Assemble Containerfile from Containerfile.d/*.containerfile fragments
+assemble:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    { echo "# generated — edit Containerfile.d/*.containerfile instead"; \
+      cat Containerfile.d/*.containerfile; } > Containerfile
+
 # Build the image locally (amd64 — matches Framework target)
-build:
+build: assemble
     podman build --platform linux/amd64 -t {{IMAGE}} .
 
 # Full rebuild without cache
-build-fresh:
+build-fresh: assemble
     podman build --platform linux/amd64 --no-cache -t {{IMAGE}} .
 
 # Open a shell in the built image to inspect it
