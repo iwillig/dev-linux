@@ -241,3 +241,69 @@ Describe 'JVM ecosystem'
     End
   End
 End
+
+Describe 'Spatial / GIS tooling'
+  Describe 'gdal (ogr2ogr)'
+    It 'is installed'
+      When run command ogr2ogr --version
+      The status should be success
+      The output should include 'GDAL'
+    End
+  End
+
+  Describe 'gdal (gdalinfo)'
+    It 'is installed'
+      When run command gdalinfo --version
+      The status should be success
+      The output should include 'GDAL'
+    End
+  End
+
+  Describe 'python3-gdal'
+    It 'is importable'
+      When run command python3 -c 'from osgeo import gdal; print(gdal.__version__)'
+      The status should be success
+      The output should be present
+    End
+  End
+
+  Describe 'mapnik'
+    It 'library is installed'
+      When run command sh -c 'rpm -q mapnik mapnik-devel'
+      The status should be success
+      The output should include 'mapnik'
+    End
+  End
+
+  Describe 'qgis'
+    It 'binary is installed'
+      When run command sh -c 'rpm -q qgis'
+      The status should be success
+      The output should include 'qgis'
+    End
+  End
+
+  Describe 'grass'
+    It 'is installed'
+      When run command grass --version
+      The status should be success
+      The output should be present
+    End
+  End
+
+  Describe 'proj'
+    It 'is installed'
+      When run command sh -c 'rpm -q proj proj-devel'
+      The status should be success
+      The output should include 'proj'
+    End
+  End
+
+  Describe 'spatialite'
+    It 'CLI is installed'
+      When run command spatialite --version
+      The status should be success
+      The output should be present
+    End
+  End
+End

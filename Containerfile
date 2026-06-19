@@ -158,6 +158,26 @@ RUN dnf5 install -y gtk-layer-shell && \
     rm /tmp/handy.rpm && \
     ostree container commit
 
+# ── Spatial / GIS tooling ─────────────────────────────────────────────────────
+RUN rpm-ostree install \
+    gdal \
+    gdal-devel \
+    gdal-libs \
+    python3-gdal \
+    mapnik \
+    mapnik-devel \
+    qgis \
+    grass \
+    grass-devel \
+    proj \
+    proj-devel \
+    geos \
+    geos-devel \
+    libspatialite \
+    libspatialite-devel \
+    spatialite-tools \
+    && ostree container commit
+
 # ── Wine ──────────────────────────────────────────────────────────────────────
 RUN rpm-ostree install \
     wine \
