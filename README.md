@@ -15,7 +15,6 @@ Framework Intel laptop.
 - **Apps**: 1Password
 - **Fonts**: JetBrains Mono Nerd Font, Cascadia Code, Inter — with tuned subpixel rendering
 - **Framework extras**: thermald, fprintd (fingerprint reader), powertop
-- **sway**: Nord-themed, with a [mechabar](https://github.com/sejjy/mechabar)-based waybar (`/etc/xdg/waybar`) adapted for sway + this image's Nord palette
 
 ---
 
