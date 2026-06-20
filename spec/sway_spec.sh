@@ -63,14 +63,24 @@ Describe 'Sway — Wayland tiling WM'
     End
   End
 
+  Describe 'sway-config-fedora'
+    It 'is installed'
+      When run command sh -c 'rpm -q sway-config-fedora'
+      The status should be success
+      The output should include 'sway-config-fedora'
+    End
+  End
+
   Describe 'GDM session integration'
     It 'installs a wayland session file for GDM'
       When run command sh -c 'test -f /usr/share/wayland-sessions/sway.desktop'
       The status should be success
     End
 
+    # sway-config-fedora launches sway via its start-sway wrapper (env/logging
+    # setup) rather than calling the sway binary directly.
     It 'session file declares the sway compositor'
-      When run command sh -c 'grep -i "Exec=sway" /usr/share/wayland-sessions/sway.desktop'
+      When run command sh -c 'grep -i "DesktopNames=sway" /usr/share/wayland-sessions/sway.desktop'
       The status should be success
       The output should include 'sway'
     End

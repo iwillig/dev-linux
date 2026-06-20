@@ -216,8 +216,13 @@ RUN systemctl enable install-1password.service && \
 # on bluefin-dx because they require libdisplay-info.so.2 while the base image
 # ships libdisplay-info-0.3.0 (.so.3), which mutter also depends on.  Revisit
 # once the COPR rebuilds against .so.3.
+#
+# sway-config-fedora must be requested explicitly — plain `dnf install sway`
+# defaults to sway-config-upstream, whose vanilla config wires up foot/wmenu
+# and a built-in bar instead of the waybar/wofi/mako below.
 RUN dnf5 install -y \
     sway \
+    sway-config-fedora \
     swaylock \
     swaybg \
     swayidle \
