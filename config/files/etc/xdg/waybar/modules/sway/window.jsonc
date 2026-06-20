@@ -1,0 +1,17 @@
+{
+	"sway/window": {
+		"format": "{}",
+		"rewrite": {
+			"": "Desktop",
+			"Alacritty": "Terminal"
+		},
+		// "separate-outputs":
+		// "icon":
+		// "icon-size":
+		// "min-length":
+		// "max-length":
+		// "tooltip":
+		"swap-icon-label": false
+		// "expand":
+	}
+}

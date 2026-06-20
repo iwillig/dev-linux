@@ -15,6 +15,7 @@ Framework Intel laptop.
 - **Apps**: 1Password
 - **Fonts**: JetBrains Mono Nerd Font, Cascadia Code, Inter — with tuned subpixel rendering
 - **Framework extras**: thermald, fprintd (fingerprint reader), powertop
+- **sway**: Nord-themed, with a [mechabar](https://github.com/sejjy/mechabar)-based waybar (`/etc/xdg/waybar`) adapted for sway + this image's Nord palette
 
 ---
 
@@ -204,3 +205,54 @@ This tags the commit and pushes the tag. GitHub Actions then:
 3. Attaches both to a GitHub Release
 
 You can also trigger the disk image build manually from the Actions tab (useful for testing the ISO without tagging).
+
+---
+
+## Displays
+
+The laptop panel (`eDP-1`) auto-disables whenever the ViewSonic XG3220
+external monitor is connected, so the external monitor is the only active
+display rather than extending/mirroring — handled by `kanshi`
+(`/etc/kanshi/config`), matched by monitor make/model/serial rather than
+connector name so it keeps working regardless of which port/dock it's
+plugged into.
+
+- **sway**: automatic via kanshi. Manual override: `mod+shift+i` (laptop
+  only) / `mod+shift+o` (external only), or `kanshictl switch laptop|external`
+  from a terminal.
+- **GNOME**: kanshi requires the wlr-output-management protocol, which
+  mutter doesn't implement, so switching there is manual — use Settings →
+  Displays, or `gnome-monitor-config list` / `set` from a terminal.
+
+To support a different external monitor, update the `output "..."` match
+string in `/etc/kanshi/config` — get the exact make/model/serial via
+`swaymsg -t get_outputs`.
+
+---
+
+## Known issues
+
+### Zoom screen sharing fails on sway ("No supported targets specified")
+
+Sharing a screen or window in Zoom silently fails to start. The portal logs
+the error:
+
+```
+journalctl --user -u xdg-desktop-portal-wlr
+[ERROR] - wlroots: No supported targets specified
+```
+
+This is an upstream bug in `xdg-desktop-portal-wlr` 0.8.1/0.8.2 (the version
+shipped in Fedora 44):
+[emersion/xdg-desktop-portal-wlr#379](https://github.com/emersion/xdg-desktop-portal-wlr/issues/379).
+`SelectSources` defaults its requested type-mask to `0` instead of `MONITOR`
+when the caller omits the `types` option, so the type intersection is always
+empty and the call fails — regardless of whether you pick a monitor or a
+window in the share dialog. It is not specific to Zoom; any client that omits
+`types` (per the portal spec, which allows this) hits it.
+
+As of 2026-06-20, the latest upstream release (0.8.3) does not include a fix.
+A one-line patch is posted on the issue and has been community-confirmed to
+work, but isn't merged yet. Revisit once upstream merges a fix or Fedora
+picks up a patched build — until then, no workaround is applied in this
+image.

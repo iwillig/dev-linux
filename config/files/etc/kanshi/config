@@ -1,0 +1,20 @@
+# Auto-switch outputs when the ViewSonic XG3220 external monitor is
+# (dis)connected. Matched by "make model serial", not connector name, since
+# the connector name depends on which port/dock it's plugged into.
+#
+# Profiles are matched top-to-bottom, first match wins, and a profile
+# matches as long as all of its listed outputs are connected — so the more
+# specific "external" profile must come before the always-true "laptop" one.
+#
+# Manual override: `kanshictl switch laptop` / `kanshictl switch external`
+# (also bound to $mod+Shift+l / $mod+Shift+e in sway, see 01-local.conf).
+
+profile external {
+    output eDP-1 disable
+    output "ViewSonic Corporation XG3220 SERIES V4M202400275" enable
+}
+
+profile laptop {
+    output eDP-1 enable
+    output "ViewSonic Corporation XG3220 SERIES V4M202400275" disable
+}

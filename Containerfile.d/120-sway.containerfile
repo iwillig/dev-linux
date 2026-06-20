@@ -12,6 +12,10 @@
 # sway-config-fedora must be requested explicitly — plain `dnf install sway`
 # defaults to sway-config-upstream, whose vanilla config wires up foot/wmenu
 # and a built-in bar instead of the waybar/wofi/mako below.
+# kanshi auto-switches output profiles on hotplug (e.g. disabling eDP-1 when the
+# ViewSonic XG3220 external monitor is connected) — see /etc/kanshi/config.
+# gnome-monitor-config is the equivalent manual CLI for the GNOME/mutter
+# session, where kanshi's wlr-output-management protocol isn't available.
 RUN dnf5 install -y \
     sway \
     sway-config-fedora \
@@ -22,5 +26,8 @@ RUN dnf5 install -y \
     waybar \
     wofi \
     mako \
+    kanshi \
+    gnome-monitor-config \
     && dnf5 clean all \
+    && systemctl --global enable kanshi.service \
     && ostree container commit
