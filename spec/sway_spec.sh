@@ -71,6 +71,23 @@ Describe 'Sway — Wayland tiling WM'
     End
   End
 
+  Describe 'local config drop-in'
+    It 'exists at /etc/sway/config.d/01-local.conf'
+      When run command sh -c 'test -f /etc/sway/config.d/01-local.conf'
+      The status should be success
+    End
+
+    It 'sets Inter as the sway font'
+      When run command sh -c 'grep -q "font pango:Inter" /etc/sway/config.d/01-local.conf'
+      The status should be success
+    End
+
+    It 'remaps Caps Lock to Control'
+      When run command sh -c 'grep -q "ctrl:nocaps" /etc/sway/config.d/01-local.conf'
+      The status should be success
+    End
+  End
+
   Describe 'GDM session integration'
     It 'installs a wayland session file for GDM'
       When run command sh -c 'test -f /usr/share/wayland-sessions/sway.desktop'
