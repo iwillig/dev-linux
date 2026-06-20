@@ -86,6 +86,16 @@ Describe 'Sway — Wayland tiling WM'
       When run command sh -c 'grep -q "ctrl:nocaps" /etc/sway/config.d/01-local.conf'
       The status should be success
     End
+
+    It 'sets the wallpaper'
+      When run command sh -c 'grep -q "wallpaper.jpg" /etc/sway/config.d/01-local.conf'
+      The status should be success
+    End
+
+    It 'wallpaper file exists on disk'
+      When run command sh -c 'test -f /usr/share/backgrounds/dev-linux/wallpaper.jpg'
+      The status should be success
+    End
   End
 
   Describe 'GDM session integration'
