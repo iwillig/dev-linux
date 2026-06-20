@@ -9,6 +9,7 @@ RUN rpm-ostree install \
     neovim \
     tmux \
     pandoc \
+    plantuml \
     aspell \
     aspell-en \
     fish \
