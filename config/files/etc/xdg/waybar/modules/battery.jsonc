@@ -1,0 +1,15 @@
+{
+  "battery": {
+    "interval": 60,
+    "states": {
+      "warning": 30,
+      "critical": 15
+    },
+    "format": "Bat {capacity}%",
+    "format-full": "Bat Full",
+    "format-charging": "Chg {capacity}%",
+    "format-plugged": "Plugged",
+    "format-alt": "Bat {time}",
+    "tooltip-format": "{timeTo}\n\nUsage: {power:0.1f}W\nCondition: {health}%\nTotal: {cycles} cycles"
+  }
+}

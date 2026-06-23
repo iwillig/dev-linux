@@ -1,0 +1,22 @@
+{
+  "cpu": {
+    "tooltip": false,
+    "interval": 10,
+    "format": "CPU {usage}%",
+    "states": {
+      "warning": 75,
+      "critical": 90
+    }
+  },
+  // athena hardcoded thermal-zone 8 for its own hardware; omitted here since
+  // it's image-wide and would be wrong on whatever machine boots it. Check
+  // `cat /sys/class/thermal/thermal_zone*/type` on the target hardware and
+  // set thermal-zone explicitly if zone 0 (the waybar default) isn't the CPU.
+  "temperature": {
+    "tooltip": false,
+    "interval": 10,
+    "critical-threshold": 80,
+    "format": "Temp {temperatureC}°C",
+    "format-critical": "Hot {temperatureC}°C"
+  }
+}

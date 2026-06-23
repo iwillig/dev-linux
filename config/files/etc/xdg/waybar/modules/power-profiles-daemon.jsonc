@@ -1,0 +1,6 @@
+{
+  "power-profiles-daemon": {
+    "format": "{profile}",
+    "tooltip-format": "Profile: {profile}\nDriver: {driver}"
+  }
+}

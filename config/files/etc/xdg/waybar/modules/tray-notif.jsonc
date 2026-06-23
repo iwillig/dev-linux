@@ -1,0 +1,11 @@
+// athena's custom/tray-arrow drove SwayNotificationCenter's panel/DND via
+// swaync-client. This image uses mako instead, which has no panel concept to
+// toggle, so that button is dropped — `makoctl dismiss -a` is the closest
+// mako equivalent if a "clear notifications" button gets added later.
+{
+  "tray": {
+    "icon-size": 16,
+    "spacing": 10,
+    "show-passive-items": true
+  }
+}

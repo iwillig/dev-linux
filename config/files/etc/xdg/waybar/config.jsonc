@@ -1,0 +1,41 @@
+/*
+ * Ported from https://github.com/haikal-hakim/athena (.config/waybar),
+ * adapted for sway (was Hyprland) and trimmed to the apps installed in this
+ * image — see modules/ for per-module notes on what changed and why.
+ */
+{
+  "layer": "top",
+  "height": 48,
+  "spacing": 6,
+  "include": [
+    "./modules/groups.jsonc",
+    "./modules/distro.jsonc",
+    "./modules/storage.jsonc",
+    "./modules/system.jsonc",
+    "./modules/power-profiles-daemon.jsonc",
+    "./modules/workspace.jsonc",
+    "./modules/idle-inhibitor.jsonc",
+    "./modules/audio.jsonc",
+    "./modules/connections.jsonc",
+    "./modules/battery.jsonc",
+    "./modules/clock.jsonc",
+    "./modules/tray-notif.jsonc"
+  ],
+  "modules-left": [
+    "group/distro-group",
+    "group/storage",
+    "group/system"
+  ],
+  "modules-center": [
+    "power-profiles-daemon",
+    "sway/workspaces",
+    "idle_inhibitor"
+  ],
+  "modules-right": [
+    "group/audio",
+    "group/connections",
+    "battery",
+    "clock",
+    "group/tray-group"
+  ]
+}

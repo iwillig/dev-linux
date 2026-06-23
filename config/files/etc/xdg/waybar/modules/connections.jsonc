@@ -1,0 +1,30 @@
+// network's on-click in athena toggled nm-applet's tray visibility; here
+// network-manager-applet already autostarts via sway-xdg-autostart.target
+// (see Containerfile.d/120-sway.containerfile), so it's always in the tray
+// already and that toggle isn't needed.
+{
+  "network": {
+    "format-wifi": "WiFi {signalStrength}%",
+    "format-ethernet": "LAN",
+    "format-linked": "Linked",
+    "format-disconnected": "No Net",
+    "format-disabled": "WiFi Off",
+    "tooltip-format-disconnected": "No Connection",
+    "tooltip-format-disabled": "Wi-Fi is OFF",
+    "tooltip-format-wifi": "{essid} ({signalStrength}%)\nFreq: {frequency}GHz\n{bandwidthDownBytes}  {bandwidthUpBytes}",
+    "tooltip-format-ethernet": "{ifname} (Connected)\n{bandwidthDownBytes}  {bandwidthUpBytes}",
+    "tooltip-format-linked": "{ifname}: No IP Address",
+    "on-scroll-up": "nmcli radio wifi on",
+    "on-scroll-down": "nmcli radio wifi off"
+  },
+  "bluetooth": {
+    "format": "BT",
+    "format-connected": "BT On",
+    "format-disabled": "BT Off",
+    "tooltip-format": "{controller_alias} {status}",
+    "tooltip-format-connected": "{num_connections} Connected:\n{device_enumerate}",
+    "tooltip-format-enumerate-connected-battery": "{device_alias} ({device_battery_percentage}%)",
+    "on-click": "blueman-manager",
+    "on-click-right": "rfkill toggle bluetooth"
+  }
+}

@@ -1,0 +1,20 @@
+// athena's on-click opened pavucontrol, which isn't installed here; the
+// pulseaudio/slider module below already gives drag-to-set volume control,
+// and a plain click still toggles mute (waybar's default click action).
+{
+  "pulseaudio": {
+    "format": "Vol {volume}%",
+    "format-muted": "Muted",
+    "tooltip-format": "Output: {volume}%"
+  },
+  "pulseaudio#microphone": {
+    "format": "{format_source}",
+    "format-source": "Mic",
+    "format-source-muted": "Mic Off"
+  },
+  "pulseaudio/slider": {
+    "min": 0,
+    "max": 100,
+    "orientation": "horizontal"
+  }
+}

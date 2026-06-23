@@ -1,0 +1,20 @@
+// athena's distro-group launched kitty/code/obsidian/onlyoffice/thunar/
+// spotify/firefox — none but firefox exist in this image, so it's trimmed to
+// the terminal and browser that are actually installed (alacritty, firefox).
+// Text labels instead of Nerd Font glyphs throughout this bar, by request.
+{
+  "custom/distro": {
+    "format": "OS",
+    "tooltip": false
+  },
+  "custom/terminal": {
+    "format": "Term",
+    "on-click": "alacritty",
+    "tooltip": false
+  },
+  "custom/browser": {
+    "format": "Web",
+    "on-click": "firefox",
+    "tooltip": false
+  }
+}

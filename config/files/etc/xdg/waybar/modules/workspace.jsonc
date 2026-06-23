@@ -1,0 +1,30 @@
+// Ported from hyprland/workspaces to sway/workspaces. The sway module
+// supports the same window-rewrite/persistent-workspaces features, except
+// the hyprland-style "*": 5 shorthand for "5 numbered placeholders" isn't
+// expanded here — it renders a literal "*" workspace — so the 5 slots are
+// spelled out explicitly below.
+// Dropped the per-state format-icons (focused/default/etc. Material Design
+// glyphs rendered as cutesy Pac-Man/ghost shapes) in favor of the plain
+// workspace number — focus/urgent/empty state is already shown via the
+// button color classes in tokens/workspace.css. window-rewrite values are
+// short text labels rather than icon glyphs, per the bar-wide text-label
+// style.
+{
+  "sway/workspaces": {
+    "format": "{name} {windows}",
+    "persistent-workspaces": {
+      "1": [],
+      "2": [],
+      "3": [],
+      "4": [],
+      "5": []
+    },
+    "window-rewrite-default": "app",
+    "window-rewrite": {
+      "Alacritty": "term",
+      "firefox": "web",
+      "blueman-manager": "bt"
+    },
+    "all-outputs": true
+  }
+}

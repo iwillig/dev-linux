@@ -1,0 +1,23 @@
+{
+  "disk": {
+    "tooltip": false,
+    "interval": 3600,
+    "path": "/",
+    "format": "Disk {percentage_used}%",
+    "format-alt": "Disk {used} / {total}",
+    "states": {
+      "warning": 80,
+      "critical": 90
+    }
+  },
+  "memory": {
+    "tooltip": false,
+    "interval": 15,
+    "format": "Mem {percentage}%",
+    "format-alt": "Mem {used} / {total}",
+    "states": {
+      "warning": 75,
+      "critical": 85
+    }
+  }
+}
