@@ -16,6 +16,10 @@
 # ViewSonic XG3220 external monitor is connected) — see /etc/kanshi/config.
 # gnome-monitor-config is the equivalent manual CLI for the GNOME/mutter
 # session, where kanshi's wlr-output-management protocol isn't available.
+# blueman and network-manager-applet ship XDG autostart entries and launch
+# automatically via sway-xdg-autostart.target (no exec needed in sway config).
+# gammastep (GNOME Night Light equivalent) ships a systemd user service and is
+# enabled globally here so it starts with the sway session.
 RUN dnf5 install -y \
     sway \
     sway-config-fedora \
@@ -28,6 +32,10 @@ RUN dnf5 install -y \
     mako \
     kanshi \
     gnome-monitor-config \
+    blueman \
+    network-manager-applet \
+    gammastep \
     && dnf5 clean all \
     && systemctl --global enable kanshi.service \
+    && systemctl --global enable gammastep.service \
     && ostree container commit
