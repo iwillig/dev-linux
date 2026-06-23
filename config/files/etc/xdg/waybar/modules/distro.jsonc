@@ -2,11 +2,8 @@
 // spotify/firefox — none but firefox exist in this image, so it's trimmed to
 // the terminal and browser that are actually installed (alacritty, firefox).
 // Text labels instead of Nerd Font glyphs throughout this bar, by request.
+// The OS label module was dropped, so this is now a plain (non-drawer) group.
 {
-  "custom/distro": {
-    "format": "OS",
-    "tooltip": false
-  },
   "custom/terminal": {
     "format": "Term",
     "on-click": "alacritty",

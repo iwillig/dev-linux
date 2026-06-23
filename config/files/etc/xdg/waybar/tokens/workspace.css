@@ -4,10 +4,7 @@
    "active"/"special" — see waybar src/modules/sway/workspaces.cpp. */
 
 #workspaces {
-  margin: 2px 5px;
-  padding: 3px 6px;
-  background-color: @surface_container;
-  border-radius: 20px;
+  padding: 0 6px;
 }
 
 #workspaces button {
@@ -15,7 +12,6 @@
   padding: 0 4px;
   margin: 0 2px;
   background: transparent;
-  border-radius: 16px;
   color: @tertiary;
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)
 }

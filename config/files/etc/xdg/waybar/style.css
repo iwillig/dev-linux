@@ -1,5 +1,7 @@
 /*
- * Ported from https://github.com/haikal-hakim/athena (.config/waybar) — see
+ * Originally ported from https://github.com/haikal-hakim/athena
+ * (.config/waybar) as a row of floating pill-shaped widget groups; restyled
+ * into a single continuous translucent bar (GNOME-topbar-like) instead — see
  * the module files under modules/ for what changed in the module config.
  */
 @import "tokens/colors.css";
@@ -15,10 +17,13 @@
   min-height: 0px;
   border: none;
   border-radius: 0;
-  font-family: 'JetBrainsMono Nerd Font', monospace;
+  font-family: 'Cascadia Code', monospace;
   font-size: 15px;
 }
 
+/* wlroots/sway has no backdrop-blur protocol, so this is a flat translucent
+   fill rather than a true blur — the closest a GTK3 bar can get to the
+   frosted-glass GNOME top bar look without switching compositors. */
 window#waybar {
-  background: transparent;
+  background-color: alpha(@surface, 0.78);
 }

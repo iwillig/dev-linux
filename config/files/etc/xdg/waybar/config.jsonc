@@ -5,7 +5,7 @@
  */
 {
   "layer": "top",
-  "height": 48,
+  "height": 32,
   "spacing": 6,
   "include": [
     "./modules/groups.jsonc",
@@ -14,7 +14,6 @@
     "./modules/system.jsonc",
     "./modules/power-profiles-daemon.jsonc",
     "./modules/workspace.jsonc",
-    "./modules/idle-inhibitor.jsonc",
     "./modules/audio.jsonc",
     "./modules/connections.jsonc",
     "./modules/battery.jsonc",
@@ -23,17 +22,16 @@
   ],
   "modules-left": [
     "group/distro-group",
-    "group/storage",
+    "memory",
     "group/system"
   ],
   "modules-center": [
     "power-profiles-daemon",
-    "sway/workspaces",
-    "idle_inhibitor"
+    "sway/workspaces"
   ],
   "modules-right": [
     "group/audio",
-    "group/connections",
+    "bluetooth",
     "battery",
     "clock",
     "group/tray-group"
