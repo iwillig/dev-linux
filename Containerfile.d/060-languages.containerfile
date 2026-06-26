@@ -1,6 +1,6 @@
 # Pi coding agent — use dnf5 (not rpm-ostree) so nodejs is immediately available
 # for the subsequent npm call within the same RUN step
-RUN dnf5 install -y nodejs && \
+RUN dnf5 install -y nodejs pnpm && \
     dnf5 clean all && \
     npm install -g --prefix /usr --ignore-scripts @earendil-works/pi-coding-agent && \
     ostree container commit
