@@ -24,6 +24,9 @@ RUN rpm-ostree install \
     plantuml \
     aspell \
     aspell-en \
+    texlive-latex \
+    texlive-latex-bin \
+    texlive-collection-latexrecommended \
     fish \
     alacritty \
     firefox \
