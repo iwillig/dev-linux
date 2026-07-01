@@ -180,6 +180,14 @@ Describe 'CLI utilities'
       The output should include 'gh version'
     End
   End
+
+  Describe 'fossil'
+    It 'is installed'
+      When run command fossil version
+      The status should be success
+      The output should include 'This is fossil version'
+    End
+  End
 End
 
 Describe 'Node.js ecosystem'

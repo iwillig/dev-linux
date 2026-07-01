@@ -34,6 +34,7 @@ RUN rpm-ostree install \
     ripgrep \
     btop \
     tldr \
+    fossil \
     && ostree container commit
 
 # GitHub CLI — official RPM repo; not in Fedora repos
