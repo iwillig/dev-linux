@@ -33,6 +33,41 @@ in a throwaway container or VM before trusting it, and ship it via
 
 ---
 
+## Design goal: safe, agent-driven iteration
+
+The point of building on an atomic, immutable base isn't just rollback safety —
+it's that the *entire system* is described as version-controlled config, which
+means an AI coding agent (or you, moving fast) can propose a change, and that
+change can be linted and tested before it ever touches a machine you actually
+boot into. Nothing is installed by hand; if it's not in `Containerfile.d/` or
+`config/files/`, it doesn't exist in the next build. That constraint is what
+makes the loop below safe to run unattended: every change is a diff, every
+diff is checked twice, and the worst case is `bootc rollback`.
+
+```mermaid
+flowchart TD
+    A[Edit Containerfile.d fragment or config/files] --> B["just assemble"]
+    B --> C["just lint (ShellCheck)"]
+    C --> D["just build && just test (ShellSpec, throwaway container)"]
+    D -- fails --> A
+    D -- passes --> E[git push]
+    E --> F["CI: re-assemble, diff-check, lint, build, ShellSpec"]
+    F -- fails --> A
+    F -- passes on main --> G["image pushed to ghcr.io/iwillig/dev-linux"]
+    G --> H["sudo bootc update && sudo reboot"]
+    H --> I{Working well?}
+    I -- yes --> A
+    I -- no --> J["sudo bootc rollback && sudo reboot"]
+    J --> A
+```
+
+Every change gets tested twice before it's live: once locally against a
+throwaway container, once more in CI against the exact image that would ship.
+The only step that isn't automatically checked is `bootc update` itself on
+real hardware — and even that is one command away from undone.
+
+---
+
 ## How this project works
 
 The `Containerfile` is generated from small, purpose-scoped fragments that get
