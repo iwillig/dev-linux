@@ -8,3 +8,14 @@ RUN dnf5 install -y gtk-layer-shell && \
     dnf5 clean all && \
     rm /tmp/handy.rpm && \
     ostree container commit
+
+# Whis desktop — push-to-talk voice-to-text GUI companion to the whis CLI;
+# not in Fedora repos. Installs /usr/bin/whis-desktop; sway binds
+# ctrl+alt+w to `whis-desktop --toggle` per its own Wayland guidance.
+RUN WHIS_RPM_URL=$(curl -sL "https://api.github.com/repos/frankdierolf/whis/releases/latest" | \
+      jq -r '.assets[] | select(.name | test("x86_64\\.rpm$")) | .browser_download_url') && \
+    curl -fsSL "$WHIS_RPM_URL" -o /tmp/whis.rpm && \
+    dnf5 install -y /tmp/whis.rpm && \
+    dnf5 clean all && \
+    rm /tmp/whis.rpm && \
+    ostree container commit

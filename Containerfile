@@ -83,6 +83,16 @@ RUN curl -fsSL \
     "https://github.com/starship/starship/releases/latest/download/starship-x86_64-unknown-linux-musl.tar.gz" \
     | tar -xz -C /usr/bin starship && \
     ostree container commit
+
+# whis CLI (https://whis.ink/cli): voice-to-text, separate from the Flatpak
+# desktop app; not in Fedora repos. Release asset name embeds the version, so
+# the latest/download static-filename trick (used above) doesn't apply here —
+# resolve the tag first, as with lazygit.
+RUN WHIS_VERSION=$(curl -sL "https://api.github.com/repos/frankdierolf/whis/releases/latest" | \
+      jq -r '.tag_name') && \
+    curl -fsSL "https://github.com/frankdierolf/whis/releases/download/${WHIS_VERSION}/whis-${WHIS_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
+    | tar -xz -C /usr/bin whis && \
+    ostree container commit
 # Nyxt browser — not in Fedora repos; ships as an AppImage inside a tarball
 # /opt is a symlink in ostree images; use /usr/lib instead
 RUN curl -fsSL \
@@ -146,6 +156,21 @@ RUN dnf5 install -y java-25-openjdk && \
     /tmp/clojure-install.sh --prefix /usr && \
     rm /tmp/clojure-install.sh && \
     ostree container commit
+
+# Rust — Fedora's packaged rustc/cargo, not rustup (upstream warns the two
+# conflict on the same system). rust-src + rustfmt + clippy + rust-analyzer
+# cover IDE code intelligence and linting; `cargo install` works out of the
+# box for pure-Rust crates since development-tools (gcc, make) is already
+# installed for crates that need to compile C dependencies.
+# https://developer.fedoraproject.org/tech/languages/rust/rust-installation.html
+RUN rpm-ostree install \
+    rust \
+    cargo \
+    clippy \
+    rust-src \
+    rustfmt \
+    rust-analyzer \
+    && ostree container commit
 # Handy — open-source push-to-talk speech-to-text; not in Fedora repos
 # gtk-layer-shell is a runtime dependency missing from the handy RPM metadata
 RUN dnf5 install -y gtk-layer-shell && \
@@ -155,6 +180,17 @@ RUN dnf5 install -y gtk-layer-shell && \
     dnf5 install -y /tmp/handy.rpm && \
     dnf5 clean all && \
     rm /tmp/handy.rpm && \
+    ostree container commit
+
+# Whis desktop — push-to-talk voice-to-text GUI companion to the whis CLI;
+# not in Fedora repos. Installs /usr/bin/whis-desktop; sway binds
+# ctrl+alt+w to `whis-desktop --toggle` per its own Wayland guidance.
+RUN WHIS_RPM_URL=$(curl -sL "https://api.github.com/repos/frankdierolf/whis/releases/latest" | \
+      jq -r '.assets[] | select(.name | test("x86_64\\.rpm$")) | .browser_download_url') && \
+    curl -fsSL "$WHIS_RPM_URL" -o /tmp/whis.rpm && \
+    dnf5 install -y /tmp/whis.rpm && \
+    dnf5 clean all && \
+    rm /tmp/whis.rpm && \
     ostree container commit
 # ── Spatial / GIS tooling ─────────────────────────────────────────────────────
 RUN rpm-ostree install \

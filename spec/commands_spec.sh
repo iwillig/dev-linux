@@ -41,6 +41,14 @@ Describe 'Shell and terminal'
     End
   End
 
+  Describe 'whis'
+    It 'is installed'
+      When run command whis --version
+      The status should be success
+      The output should include 'whis'
+    End
+  End
+
   Describe 'alacritty'
     It 'is installed'
       When run command alacritty --version
@@ -246,6 +254,48 @@ Describe 'JVM ecosystem'
       When run command clj --version
       The status should be success
       The output should be present
+    End
+  End
+End
+
+Describe 'Rust ecosystem'
+  Describe 'rustc'
+    It 'is installed'
+      When run command rustc --version
+      The status should be success
+      The output should include 'rustc'
+    End
+  End
+
+  Describe 'cargo'
+    It 'is installed'
+      When run command cargo --version
+      The status should be success
+      The output should include 'cargo'
+    End
+  End
+
+  Describe 'cargo clippy'
+    It 'is installed'
+      When run command cargo clippy --version
+      The status should be success
+      The output should include 'clippy'
+    End
+  End
+
+  Describe 'rustfmt'
+    It 'is installed'
+      When run command rustfmt --version
+      The status should be success
+      The output should include 'rustfmt'
+    End
+  End
+
+  Describe 'rust-analyzer'
+    It 'is installed'
+      When run command rust-analyzer --version
+      The status should be success
+      The output should include 'rust-analyzer'
     End
   End
 End

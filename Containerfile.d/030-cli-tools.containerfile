@@ -22,3 +22,13 @@ RUN curl -fsSL \
     "https://github.com/starship/starship/releases/latest/download/starship-x86_64-unknown-linux-musl.tar.gz" \
     | tar -xz -C /usr/bin starship && \
     ostree container commit
+
+# whis CLI (https://whis.ink/cli): voice-to-text, separate from the Flatpak
+# desktop app; not in Fedora repos. Release asset name embeds the version, so
+# the latest/download static-filename trick (used above) doesn't apply here —
+# resolve the tag first, as with lazygit.
+RUN WHIS_VERSION=$(curl -sL "https://api.github.com/repos/frankdierolf/whis/releases/latest" | \
+      jq -r '.tag_name') && \
+    curl -fsSL "https://github.com/frankdierolf/whis/releases/download/${WHIS_VERSION}/whis-${WHIS_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
+    | tar -xz -C /usr/bin whis && \
+    ostree container commit

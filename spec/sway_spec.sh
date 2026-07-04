@@ -96,6 +96,11 @@ Describe 'Sway — Wayland tiling WM'
       When run command sh -c 'test -f /usr/share/backgrounds/dev-linux/wallpaper.jpg'
       The status should be success
     End
+
+    It 'binds ctrl+alt+w to toggle Whis'
+      When run command sh -c 'grep -q "bindsym ctrl+alt+w exec whis-desktop --toggle" /etc/sway/config.d/01-local.conf'
+      The status should be success
+    End
   End
 
   Describe 'GDM session integration'
