@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 Describe 'Default shell'
   It 'is set to fish for new users'
     When run grep '^SHELL=/usr/bin/fish' /etc/default/useradd

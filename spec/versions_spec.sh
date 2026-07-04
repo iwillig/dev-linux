@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 Describe 'Java'
   It 'is OpenJDK 25'
     When run command java --version

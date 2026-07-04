@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 Describe 'llama.cpp — local LLM inference'
   Describe 'install layout'
     It 'has the install directory'

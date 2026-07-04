@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 Describe 'Editors'
   Describe 'emacs'
     It 'is installed'

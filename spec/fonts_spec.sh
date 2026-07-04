@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 Describe 'Fonts'
   Describe 'JetBrains Mono'
     It 'is registered with fontconfig'

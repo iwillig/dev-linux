@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 Describe 'Sway — Wayland tiling WM'
   Describe 'sway'
     It 'is installed'
