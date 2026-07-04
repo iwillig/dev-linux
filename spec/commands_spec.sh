@@ -196,6 +196,14 @@ Describe 'CLI utilities'
       The output should include 'This is fossil version'
     End
   End
+
+  Describe 'shellcheck'
+    It 'is installed'
+      When run command shellcheck --version
+      The status should be success
+      The output should include 'ShellCheck'
+    End
+  End
 End
 
 Describe 'Node.js ecosystem'

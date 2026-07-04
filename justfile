@@ -74,6 +74,10 @@ test-fast:
         {{IMAGE}} \
         /shellspec/lib/shellspec/shellspec
 
+# Lint shell scripts with ShellCheck
+lint:
+    shellcheck config/files/etc/profile.d/*.sh spec/*.sh
+
 # Pull latest upstream to check for updates
 check-upstream:
     podman pull --platform linux/amd64 ghcr.io/ublue-os/bluefin-dx:stable

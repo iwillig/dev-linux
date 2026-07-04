@@ -4,6 +4,21 @@ A custom Fedora Atomic image based on [Bluefin
 DX](https://projectbluefin.io/), optimized for development on a
 Framework Intel laptop.
 
+Bluefin DX is itself built on **Fedora Silverblue** — Fedora's atomic,
+immutable desktop variant. The base OS lives on a read-only `ostree` commit;
+`bootc` layers container images on top of it, and updates replace the whole
+image atomically instead of patching packages in place. That gives this
+project instant rollback (`bootc rollback`), an image that's identical on
+every machine it's deployed to, and a build that's just a `Containerfile` —
+no snowflake state to drift out of sync.
+
+This repo also works as a template for the general workflow: define your
+desired system as a `Containerfile` (or fragments, as below) layered on any
+`bootc`-enabled Fedora Atomic base, build it with `podman`/`buildah`, test it
+in a throwaway container or VM before trusting it, and ship it via
+`bootc switch`/`bootc update`. The same pattern extends to CoreOS, other
+`ublue-os` images, or a from-scratch atomic image of your own.
+
 ## What's included
 
 - **Base**: `ghcr.io/ublue-os/bluefin-dx:stable` — GNOME + dev tooling baseline (Fedora 44)
@@ -15,6 +30,89 @@ Framework Intel laptop.
 - **Apps**: 1Password
 - **Fonts**: JetBrains Mono Nerd Font, Cascadia Code, Inter — with tuned subpixel rendering
 - **Framework extras**: thermald, fprintd (fingerprint reader), powertop
+
+---
+
+## How this project works
+
+The `Containerfile` is generated from small, purpose-scoped fragments that get
+assembled, tested, and shipped by CI. The pieces:
+
+### `Containerfile.d/*.containerfile` — the actual build recipe
+
+Each fragment layers one concern on top of `ghcr.io/ublue-os/bluefin-dx:stable`,
+numbered so they apply in a predictable order:
+
+| Fragment | What it adds |
+|---|---|
+| `000-header` | Base image + tag args (`bluefin-dx:stable`) |
+| `010-hardware` | Framework-specific packages: `thermald`, `fprintd` (fingerprint reader), `powertop` |
+| `020-devtools` | Compiler toolchain (`development-tools` group), Emacs, Neovim, tmux, pandoc, LaTeX, fish, Alacritty, Firefox, and CLI staples (ripgrep, fzf, bat, eza, jq, gh, ShellCheck, …) |
+| `030-cli-tools` | Tools not packaged for Fedora: zellij, lazygit, fastfetch, starship, the `whis` voice-to-text CLI |
+| `040-browsers` | Nyxt (Lisp-extensible browser), installed from its AppImage tarball |
+| `050-package-managers` | Homebrew and SDKMAN!, installed into `/var` so they survive `bootc` updates and are writable by the `wheel` group without sudo |
+| `060-languages` | Node/npm-based tooling (Claude Code CLI, TypeScript + LSP, the Pi coding agent), Clojure, and Rust (Fedora's `rustc`/`cargo`, not rustup) |
+| `070-apps` | Handy and Whis desktop — push-to-talk speech-to-text GUIs |
+| `080-gis` | Spatial/GIS stack: GDAL, Mapnik, QGIS, GRASS, PROJ, GEOS, SpatiaLite |
+| `090-wine` | Wine + winetricks for running Windows binaries |
+| `100-fonts` | JetBrains Mono, Cascadia Code, Noto Emoji, Inter, and the Nerd Font-patched JetBrains Mono |
+| `110-config` | Copies `config/files/` into the image root and enables the first-boot 1Password install service |
+| `120-sway` | Sway tiling WM stack (waybar, wofi, mako, kanshi, swaylock/idle/bg) alongside GNOME — GDM picks it up automatically as a login session |
+| `121-elementary-theme` | Builds the elementary GTK stylesheet from source (not packaged for Fedora) |
+| `125-llama-cpp` | Local LLM inference via prebuilt `llama.cpp` CPU binaries, pinned to a specific release tag |
+
+Run `just assemble` to concatenate these into the real `Containerfile` (the
+generated file carries a header telling you not to edit it directly). CI
+re-runs `just assemble` and fails the build if the checked-in `Containerfile`
+doesn't match — so the fragments are always the source of truth.
+
+### `config/files/` — a filesystem overlay
+
+Mirrors the target root filesystem (`etc/`, `usr/share/`) and gets `COPY`'d
+wholesale into the image by `110-config.containerfile`. This is where
+declarative config lives instead of `RUN sed`/`echo` hacks: fish integration
+snippets for Homebrew/SDKMAN, fontconfig tuning, GTK settings, the kanshi
+output-switching rules, the full waybar config (modules + CSS tokens), sway
+keybindings, swaylock/gammastep config, and the desktop wallpaper.
+
+### `justfile` — the command surface
+
+Task runner for every workflow in this repo: assembling and building the
+image (`build`, `build-fresh`), poking at it (`shell`, `check-fonts`,
+`check-packages`), linting the repo's shell scripts (`lint`), running the
+test suite (`test`, `test-fast`), swapping your live Framework laptop onto a
+locally-built image (`local-switch`), managing the QEMU test VM (`vm-*`),
+writing installer ISOs to USB (`usb-list`, `usb-write`), and cutting releases
+(`release`, `download-release`).
+
+### `spec/` — ShellSpec test suite
+
+Behavioral tests that run *inside* the built container image (via
+`vendor/shellspec`, a vendored copy of the [ShellSpec](https://shellspec.info/)
+BDD framework) to confirm the build actually produced a working system:
+editors and CLI tools are on `PATH` and report sane `--version` output,
+fonts are registered with fontconfig, Sway/waybar/swaylock are installed,
+language runtimes are pinned to expected versions, llama.cpp's binaries and
+bundled shared libraries are in place, and config files (default shell,
+Homebrew/SDKMAN ownership) landed correctly.
+
+### `.github/workflows/` — CI/CD
+
+- **`build.yml`** — on every push/PR to `main` (and weekly on a cron, to catch
+  upstream Bluefin drift): assembles the Containerfile, verifies it's in sync,
+  lints the repo's shell scripts with ShellCheck (`just lint`), builds the
+  image, runs the full ShellSpec suite against it, and (main branch only)
+  pushes to `ghcr.io/iwillig/dev-linux`.
+- **`build-disk-images.yml`** — on a `v*` tag push (or manual dispatch):
+  rebuilds and pushes the OCI image, then runs `bootc-image-builder` twice to
+  produce a bootable `qcow2` (for QEMU testing) and an Anaconda `iso` (for USB
+  installs), compresses them, and attaches both to a GitHub Release.
+
+### `vm/`
+
+Working directory for QEMU test-VM artifacts (disk images, downloaded ISOs,
+OVMF firmware vars) created by the `just vm-*` recipes — gitignored, not part
+of the build itself.
 
 ---
 
