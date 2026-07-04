@@ -47,8 +47,8 @@ numbered so they apply in a predictable order:
 |---|---|
 | `000-header` | Base image + tag args (`bluefin-dx:stable`) |
 | `010-hardware` | Framework-specific packages: `thermald`, `fprintd` (fingerprint reader), `powertop` |
-| `020-devtools` | Compiler toolchain (`development-tools` group), Emacs, Neovim, tmux, pandoc, LaTeX, fish, Alacritty, Firefox, and CLI staples (ripgrep, fzf, bat, eza, jq, gh, ShellCheck, …) |
-| `030-cli-tools` | Tools not packaged for Fedora: zellij, lazygit, fastfetch, starship, the `whis` voice-to-text CLI |
+| `020-devtools` | Compiler toolchain (`development-tools` group), Emacs, Neovim, tmux, pandoc, LaTeX, fish, Alacritty, Firefox, CLI staples (ripgrep, fzf, bat, eza, jq, gh, ShellCheck, …), and dotfiles tooling (`stow`, `gitleaks`) |
+| `030-cli-tools` | Tools not packaged for Fedora: zellij, lazygit, fastfetch, starship, the `whis` voice-to-text CLI, `trufflehog` secret scanner |
 | `040-browsers` | Nyxt (Lisp-extensible browser), installed from its AppImage tarball |
 | `050-package-managers` | Homebrew and SDKMAN!, installed into `/var` so they survive `bootc` updates and are writable by the `wheel` group without sudo |
 | `060-languages` | Node/npm-based tooling (Claude Code CLI, TypeScript + LSP, the Pi coding agent), Clojure, and Rust (Fedora's `rustc`/`cargo`, not rustup) |
@@ -74,6 +74,54 @@ declarative config lives instead of `RUN sed`/`echo` hacks: fish integration
 snippets for Homebrew/SDKMAN, fontconfig tuning, GTK settings, the kanshi
 output-switching rules, the full waybar config (modules + CSS tokens), sway
 keybindings, swaylock/gammastep config, and the desktop wallpaper.
+
+### Dotfiles: system config vs. personal config
+
+`config/files/` (above) only covers *system-wide* config — the stuff baked
+into the public image at `/etc` and `/usr/share`. It deliberately never
+holds anything personal or secret, because this repo's image is pushed
+public to GHCR.
+
+Personal, per-user config (editor settings, terminal themes, shell
+aliases, API tokens) lives in a **separate, private** dotfiles repo,
+managed with [GNU Stow](https://www.gnu.org/software/stow/) — installed
+as a system package by `020-devtools.containerfile` so it's always
+available, without this repo ever needing to see what's inside it.
+
+The pattern:
+
+- **Keep the dotfiles repo private on GitHub.** It's the only thing
+  standing between your editor config and your API tokens, SSH config,
+  and shell history conventions. Clone it over SSH
+  (`git@github.com:<you>/dotfiles.git`), not HTTPS — SSH auth to a
+  private repo doesn't depend on a PAT sitting in a credential helper.
+- **Lay it out as Stow packages.** Each top-level directory mirrors
+  `$HOME` from the point where it should be symlinked, e.g.
+  `fish/.config/fish/config.fish` or `emacs/.emacs.d/init.el`. Running
+  `stow fish` from the repo root symlinks `fish/.config/fish` into
+  `~/.config/fish`; `stow -D fish` removes the symlinks. This keeps the
+  repo itself as the single source of truth — `~/.config/fish/config.fish`
+  is a symlink, not a copy, so edits in place are edits to the repo.
+- **Never put secrets in the repo, even though it's private.** Private
+  repos still end up in local clones, backups, and (if a repo is ever
+  made public by mistake) full history. Reference secrets through
+  [1Password's CLI](https://developer.1password.com/docs/cli/) instead:
+  `set -x HF_TOKEN (op read "op://Personal/HF_TOKEN/credential")` in
+  `fish/config.fish`, for example. The repo holds the *lookup*, never the
+  *value*. 1Password (`070-apps.containerfile`) and its SSH agent
+  integration are already part of this image for exactly this reason.
+- **Gitignore anything that isn't config.** Editors and agent tools
+  routinely drop caches, session logs, and backup files inside the same
+  directories your dotfiles live in (`.bak` files, `sessions/`,
+  `*-cache.json`, `npm/`). None of that belongs in version control —
+  add it to the dotfiles repo's `.gitignore` before the first `git add`,
+  not after something sensitive slips in.
+- **Scan before you push.** `gitleaks` (added in `020-devtools.containerfile`,
+  alongside `stow`) scans a repo's working tree *and* full history for
+  credential-shaped strings. Run `gitleaks git .` from the dotfiles repo
+  periodically, or wire it in as a pre-commit hook
+  (`gitleaks protect --staged`), so an accidentally hardcoded token gets
+  caught locally instead of after `git push`.
 
 ### `justfile` — the command surface
 

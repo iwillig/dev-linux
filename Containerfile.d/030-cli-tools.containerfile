@@ -32,3 +32,12 @@ RUN WHIS_VERSION=$(curl -sL "https://api.github.com/repos/frankdierolf/whis/rele
     curl -fsSL "https://github.com/frankdierolf/whis/releases/download/${WHIS_VERSION}/whis-${WHIS_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
     | tar -xz -C /usr/bin whis && \
     ostree container commit
+
+# trufflehog: secret scanner for git repos, filesystems, and live sources
+# (https://github.com/trufflesecurity/trufflehog); not in Fedora repos.
+# Asset name embeds the version without the leading "v", as with lazygit.
+RUN TRUFFLEHOG_VERSION=$(curl -sL "https://api.github.com/repos/trufflesecurity/trufflehog/releases/latest" | \
+      jq -r '.tag_name') && \
+    curl -fsSL "https://github.com/trufflesecurity/trufflehog/releases/download/${TRUFFLEHOG_VERSION}/trufflehog_${TRUFFLEHOG_VERSION#v}_linux_amd64.tar.gz" \
+    | tar -xz -C /usr/bin trufflehog && \
+    ostree container commit

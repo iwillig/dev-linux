@@ -49,6 +49,14 @@ Describe 'Shell and terminal'
     End
   End
 
+  Describe 'trufflehog'
+    It 'is installed'
+      When run command trufflehog --version
+      The status should be success
+      The output should include 'trufflehog'
+    End
+  End
+
   Describe 'alacritty'
     It 'is installed'
       When run command alacritty --version
@@ -168,6 +176,14 @@ Describe 'CLI utilities'
   Describe 'stow'
     It 'is installed'
       When run command stow --version
+      The status should be success
+      The output should be present
+    End
+  End
+
+  Describe 'gitleaks'
+    It 'is installed'
+      When run command gitleaks version
       The status should be success
       The output should be present
     End

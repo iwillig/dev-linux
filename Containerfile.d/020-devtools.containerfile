@@ -20,6 +20,7 @@ RUN rpm-ostree install \
     firefox \
     sqlite-devel \
     stow \
+    gitleaks \
     the_silver_searcher \
     rlwrap \
     xclip \
