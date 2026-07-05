@@ -7,6 +7,13 @@ RUN mkdir -p /var/home/linuxbrew && \
     chmod -R g+rwX /var/home/linuxbrew/.linuxbrew && \
     ostree container commit
 
+# opencode — installed via Homebrew tap; must run after brew is cloned above.
+# eval'ing shellenv gives brew its Cellar/Homebrew.rb dependencies on PATH for
+# the duration of this RUN step (brew isn't on PATH in a build shell otherwise).
+RUN eval "$(/var/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && \
+    brew install anomalyco/tap/opencode && \
+    ostree container commit
+
 # SDKMAN! — installed to /var/sdkman (mutable, persists across bootc updates)
 # wheel group owns the prefix so the default admin user can run sdk install without sudo.
 # /root -> /var/roothome (symlink); pre-create .bashrc so the installer script can finish
