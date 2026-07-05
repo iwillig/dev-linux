@@ -10,7 +10,10 @@ RUN mkdir -p /var/home/linuxbrew && \
 # opencode — installed via Homebrew tap; must run after brew is cloned above.
 # eval'ing shellenv gives brew its Cellar/Homebrew.rb dependencies on PATH for
 # the duration of this RUN step (brew isn't on PATH in a build shell otherwise).
-RUN eval "$(/var/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && \
+# /root -> /var/roothome (symlink); pre-create it so Homebrew's Ruby code can
+# resolve $HOME (Dir.mkdir on a dangling symlink target raises EEXIST).
+RUN mkdir -p /var/roothome && \
+    eval "$(/var/home/linuxbrew/.linuxbrew/bin/brew shellenv)" && \
     brew install anomalyco/tap/opencode && \
     ostree container commit
 
