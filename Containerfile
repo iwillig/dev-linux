@@ -152,7 +152,8 @@ RUN mkdir -p /var/roothome && \
     ostree container commit
 # Pi coding agent — use dnf5 (not rpm-ostree) so nodejs is immediately available
 # for the subsequent npm call within the same RUN step
-RUN dnf5 install -y nodejs pnpm && \
+# yarnpkg is Fedora's package name for Yarn (plain "yarn" is a pre-existing cmdtest package)
+RUN dnf5 install -y nodejs pnpm yarnpkg && \
     dnf5 clean all && \
     npm install -g --prefix /usr --ignore-scripts @earendil-works/pi-coding-agent && \
     ostree container commit
