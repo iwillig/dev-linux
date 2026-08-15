@@ -89,12 +89,12 @@ numbered so they apply in a predictable order:
 | `060-languages` | Node/npm-based tooling (Claude Code CLI, TypeScript + LSP, the Pi coding agent), Clojure, and Rust (Fedora's `rustc`/`cargo`, not rustup) |
 | `070-apps` | Handy and Whis desktop — push-to-talk speech-to-text GUIs |
 | `080-gis` | Spatial/GIS stack: GDAL, Mapnik, QGIS, GRASS, PROJ, GEOS, SpatiaLite |
-| `090-wine` | Wine + winetricks for running Windows binaries |
 | `100-fonts` | JetBrains Mono, Cascadia Code, Noto Emoji, Inter, and the Nerd Font-patched JetBrains Mono |
 | `110-config` | Copies `config/files/` into the image root and enables the first-boot 1Password install service |
 | `120-sway` | Sway tiling WM stack (waybar, wofi, mako, kanshi, swaylock/idle/bg) alongside GNOME — GDM picks it up automatically as a login session |
 | `121-elementary-theme` | Builds the elementary GTK stylesheet from source (not packaged for Fedora) |
 | `125-llama-cpp` | Local LLM inference via prebuilt `llama.cpp` CPU binaries, pinned to a specific release tag |
+| `126-wine` | Wine + winetricks for running Windows binaries. Ordered last: Fedora's `wine` RPM transitively depends on `meson` (via its bundled mingw-cross vkd3d/SDL3/FAudio components), and `121-elementary-theme` does `dnf5 remove -y meson ninja-build sassc` as build-tool cleanup — installing wine any earlier let that removal cascade into silently uninstalling `wine-core` and friends |
 
 Run `just assemble` to concatenate these into the real `Containerfile` (the
 generated file carries a header telling you not to edit it directly). CI

@@ -277,11 +277,6 @@ RUN rpm-ostree install \
     libspatialite-devel \
     spatialite-tools \
     && ostree container commit
-# ── Wine ──────────────────────────────────────────────────────────────────────
-RUN rpm-ostree install \
-    wine \
-    winetricks \
-    && ostree container commit
 # ── Fonts ─────────────────────────────────────────────────────────────────────
 RUN rpm-ostree install \
     jetbrains-mono-fonts \
@@ -401,3 +396,8 @@ RUN LLAMA_URL=$(curl -sL "https://api.github.com/repos/ggml-org/llama.cpp/releas
     ln -sf /usr/lib/llama.cpp/llama-server /usr/bin/llama-server && \
     ln -sf /usr/lib/llama.cpp/llama-bench  /usr/bin/llama-bench  && \
     ostree container commit
+# ── Wine ──────────────────────────────────────────────────────────────────────
+RUN rpm-ostree install \
+    wine \
+    winetricks \
+    && ostree container commit
