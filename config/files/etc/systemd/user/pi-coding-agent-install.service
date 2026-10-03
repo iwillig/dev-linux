@@ -4,6 +4,14 @@ ConditionPathExists=!%h/.pi/agent/install/managed-install.json
 
 [Service]
 Type=oneshot
+# This unit fires very early in user-manager startup, before login shells
+# have synced their PATH (.local/bin, npm-global, linuxbrew, ...) back into
+# systemd's user environment. Pi's installer picks its bin dir by scanning
+# $PATH for ~/.local/bin and falls back to ~/.pi/agent/bin if it's missing —
+# so without this, it silently installs to the wrong place and `pi` is never
+# on PATH. Set PATH explicitly so the choice doesn't depend on that race.
+ExecStartPre=/bin/mkdir -p %h/.local/bin
+Environment=PATH=%h/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ExecStart=/bin/sh -c 'curl -fsSL https://pi.dev/install.sh | sh'
 RemainAfterExit=yes
 

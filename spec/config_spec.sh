@@ -58,6 +58,11 @@ Describe 'Systemd services'
     When run sh -c '[ -L /etc/systemd/user/default.target.wants/pi-coding-agent-install.service ]'
     The status should be success
   End
+
+  It 'Pi coding agent installer pins PATH so it installs into ~/.local/bin, not ~/.pi/agent/bin'
+    When run grep -q '^Environment=PATH=%h/.local/bin:' /etc/systemd/user/pi-coding-agent-install.service
+    The status should be success
+  End
 End
 
 Describe 'npm global tools'
