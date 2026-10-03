@@ -86,11 +86,11 @@ numbered so they apply in a predictable order:
 | `030-cli-tools` | Tools not packaged for Fedora: zellij, lazygit, fastfetch, starship, the `whis` voice-to-text CLI, `trufflehog` secret scanner |
 | `040-browsers` | Nyxt (Lisp-extensible browser), installed from its AppImage tarball |
 | `050-package-managers` | Homebrew and SDKMAN!, installed into `/var` so they survive `bootc` updates and are writable by the `wheel` group without sudo |
-| `060-languages` | Node/npm-based tooling (Claude Code CLI, TypeScript + LSP, the Pi coding agent), Clojure, and Rust (Fedora's `rustc`/`cargo`, not rustup) |
+| `060-languages` | Node/npm-based tooling (Claude Code CLI, TypeScript + LSP), Clojure, and Rust (Fedora's `rustc`/`cargo`, not rustup) |
 | `070-apps` | Handy and Whis desktop — push-to-talk speech-to-text GUIs |
 | `080-gis` | Spatial/GIS stack: GDAL, Mapnik, QGIS, GRASS, PROJ, GEOS, SpatiaLite |
 | `100-fonts` | JetBrains Mono, Cascadia Code, Noto Emoji, Inter, and the Nerd Font-patched JetBrains Mono |
-| `110-config` | Copies `config/files/` into the image root and enables the first-boot 1Password install service |
+| `110-config` | Copies `config/files/` into the image root and enables the first-boot 1Password and Pi coding agent (per-user, via [pi.dev](https://pi.dev)) install services |
 | `120-sway` | Sway tiling WM stack (waybar, wofi, mako, kanshi, swaylock/idle/bg) alongside GNOME — GDM picks it up automatically as a login session |
 | `121-elementary-theme` | Builds the elementary GTK stylesheet from source (not packaged for Fedora) |
 | `125-llama-cpp` | Local LLM inference via prebuilt `llama.cpp` CPU binaries, pinned to a specific release tag |

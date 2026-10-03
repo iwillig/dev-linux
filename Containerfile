@@ -150,12 +150,9 @@ RUN mkdir -p /var/roothome && \
     curl -fsSL "https://raw.githubusercontent.com/reitzig/sdkman-for-fish/main/completions/sdk.fish" \
       -o /etc/fish/completions/sdk.fish && \
     ostree container commit
-# Pi coding agent — use dnf5 (not rpm-ostree) so nodejs is immediately available
-# for the subsequent npm call within the same RUN step
 # yarnpkg is Fedora's package name for Yarn (plain "yarn" is a pre-existing cmdtest package)
 RUN dnf5 install -y nodejs pnpm yarnpkg && \
     dnf5 clean all && \
-    npm install -g --prefix /usr --ignore-scripts @earendil-works/pi-coding-agent && \
     ostree container commit
 
 # TypeScript toolchain — compiler + LSP server for Emacs/Neovim editor integration
@@ -305,7 +302,12 @@ RUN NERD_FONT_VERSION="v3.2.1" && \
 COPY config/files/ /
 
 # Enable first-boot services
+# pi-coding-agent-install is a --global user unit: it installs Pi
+# (https://pi.dev) per-user into ~/.local/bin on first login via the
+# upstream installer, rather than a root-owned copy in the image, so `pi
+# update` can keep it current without rebuilding the image.
 RUN systemctl enable install-1password.service && \
+    systemctl --global enable pi-coding-agent-install.service && \
     ostree container commit
 # ── Sway — minimal Wayland tiling WM alongside GNOME ─────────────────────────
 # All packages are in standard Fedora repos — no COPR needed.

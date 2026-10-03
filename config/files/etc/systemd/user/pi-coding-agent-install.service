@@ -1,0 +1,11 @@
+[Unit]
+Description=Install Pi coding agent (user-managed install, self-updates via `pi update`)
+ConditionPathExists=!%h/.pi/agent/install/managed-install.json
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'curl -fsSL https://pi.dev/install.sh | sh'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=default.target

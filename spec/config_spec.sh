@@ -53,6 +53,11 @@ Describe 'Systemd services'
     When run sh -c '[ -L /etc/systemd/system/multi-user.target.wants/install-1password.service ]'
     The status should be success
   End
+
+  It 'Pi coding agent installer is a global user unit enabled in default.target'
+    When run sh -c '[ -L /etc/systemd/user/default.target.wants/pi-coding-agent-install.service ]'
+    The status should be success
+  End
 End
 
 Describe 'npm global tools'
