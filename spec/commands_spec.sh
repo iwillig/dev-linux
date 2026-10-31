@@ -66,6 +66,14 @@ Describe 'Shell and terminal'
     End
   End
 
+  Describe 'kitty'
+    It 'is installed'
+      When run command kitty --version
+      The status should be success
+      The output should be present
+    End
+  End
+
   Describe 'tmux'
     It 'is installed'
       When run command tmux -V

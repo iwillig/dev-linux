@@ -29,6 +29,7 @@ RUN rpm-ostree install \
     texlive-collection-latexrecommended \
     fish \
     alacritty \
+    kitty \
     firefox \
     sqlite-devel \
     stow \

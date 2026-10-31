@@ -23,7 +23,7 @@ in a throwaway container or VM before trusting it, and ship it via
 
 - **Base**: `ghcr.io/ublue-os/bluefin-dx:stable` — GNOME + dev tooling baseline (Fedora 44)
 - **Shell**: fish (default), with starship prompt
-- **Terminal**: Alacritty, Zellij
+- **Terminal**: Alacritty, Kitty, Zellij
 - **Editors**: Emacs, Neovim
 - **Dev tools**: gcc/make/gdb (Development Tools group), pandoc, aspell, fd, bat, eza, zoxide, fzf, jq, yq, httpie, zellij
 - **Browsers**: Firefox, Nyxt
@@ -82,7 +82,7 @@ numbered so they apply in a predictable order:
 |---|---|
 | `000-header` | Base image + tag args (`bluefin-dx:stable`) |
 | `010-hardware` | Framework-specific packages: `thermald`, `fprintd` (fingerprint reader), `powertop` |
-| `020-devtools` | Compiler toolchain (`development-tools` group), Emacs, Neovim, tmux, pandoc, LaTeX, fish, Alacritty, Firefox, CLI staples (ripgrep, fzf, bat, eza, jq, gh, ShellCheck, …), and dotfiles tooling (`stow`, `gitleaks`) |
+| `020-devtools` | Compiler toolchain (`development-tools` group), Emacs, Neovim, tmux, pandoc, LaTeX, fish, Alacritty, Kitty, Firefox, CLI staples (ripgrep, fzf, bat, eza, jq, gh, ShellCheck, …), and dotfiles tooling (`stow`, `gitleaks`) |
 | `030-cli-tools` | Tools not packaged for Fedora: zellij, lazygit, fastfetch, starship, the `whis` voice-to-text CLI, `trufflehog` secret scanner |
 | `040-browsers` | Nyxt (Lisp-extensible browser), installed from its AppImage tarball |
 | `050-package-managers` | Homebrew and SDKMAN!, installed into `/var` so they survive `bootc` updates and are writable by the `wheel` group without sudo |
