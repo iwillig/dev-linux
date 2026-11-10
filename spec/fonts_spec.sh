@@ -21,6 +21,13 @@ Describe 'Fonts'
     End
   End
 
+  Describe 'Iosevka'
+    It 'is registered with fontconfig'
+      When run sh -c 'fc-list | grep -qi "Iosevka"'
+      The status should be success
+    End
+  End
+
   Describe 'Inter'
     It 'is registered with fontconfig'
       When run sh -c 'fc-list | grep -q "Inter"'

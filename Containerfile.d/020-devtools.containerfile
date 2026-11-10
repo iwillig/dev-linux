@@ -17,7 +17,6 @@ RUN rpm-ostree install \
     texlive-collection-latexrecommended \
     fish \
     alacritty \
-    kitty \
     firefox \
     sqlite-devel \
     stow \
@@ -39,6 +38,10 @@ RUN rpm-ostree install \
     fossil \
     ShellCheck \
     && ostree container commit
+
+# Kitty — Fedora package, installed with dnf5
+RUN dnf5 install -y kitty && dnf5 clean all && \
+    ostree container commit
 
 # GitHub CLI — official RPM repo; not in Fedora repos
 RUN curl -fsSL https://cli.github.com/packages/rpm/gh-cli.repo \

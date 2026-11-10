@@ -15,6 +15,17 @@ RUN mkdir -p /usr/share/fonts/inter && \
     fc-cache -f && \
     ostree container commit
 
+# Iosevka is not packaged in Fedora; install the upstream TTF release.
+RUN IOSEVKA_VERSION=$(curl -fsSL "https://api.github.com/repos/be5invis/Iosevka/releases/latest" | \
+      jq -er '.tag_name | ltrimstr("v")') && \
+    mkdir -p /usr/share/fonts/iosevka && \
+    curl -fsSL "https://github.com/be5invis/Iosevka/releases/download/v${IOSEVKA_VERSION}/PkgTTF-Iosevka-${IOSEVKA_VERSION}.zip" \
+      -o /tmp/iosevka.zip && \
+    unzip -q /tmp/iosevka.zip -d /usr/share/fonts/iosevka && \
+    rm /tmp/iosevka.zip && \
+    fc-cache -f && \
+    ostree container commit
+
 # Download JetBrains Mono Nerd Font (patched version, not in Fedora repos)
 RUN NERD_FONT_VERSION="v3.2.1" && \
     mkdir -p /usr/share/fonts/nerd-fonts/JetBrainsMono && \

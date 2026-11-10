@@ -28,7 +28,7 @@ in a throwaway container or VM before trusting it, and ship it via
 - **Dev tools**: gcc/make/gdb (Development Tools group), pandoc, aspell, fd, bat, eza, zoxide, fzf, jq, yq, httpie, zellij
 - **Browsers**: Firefox, Nyxt
 - **Apps**: 1Password
-- **Fonts**: JetBrains Mono Nerd Font, Cascadia Code, Inter — with tuned subpixel rendering
+- **Fonts**: JetBrains Mono Nerd Font, Cascadia Code, Inter, Iosevka — with tuned subpixel rendering
 - **Framework extras**: thermald, fprintd (fingerprint reader), powertop
 
 ---
@@ -89,7 +89,7 @@ numbered so they apply in a predictable order:
 | `060-languages` | Node/npm-based tooling (Claude Code CLI, TypeScript + LSP), Clojure, and Rust (Fedora's `rustc`/`cargo`, not rustup) |
 | `070-apps` | Handy and Whis desktop — push-to-talk speech-to-text GUIs |
 | `080-gis` | Spatial/GIS stack: GDAL, Mapnik, QGIS, GRASS, PROJ, GEOS, SpatiaLite |
-| `100-fonts` | JetBrains Mono, Cascadia Code, Noto Emoji, Inter, and the Nerd Font-patched JetBrains Mono |
+| `100-fonts` | JetBrains Mono, Cascadia Code, Noto Emoji, Inter, Iosevka, and the Nerd Font-patched JetBrains Mono |
 | `110-config` | Copies `config/files/` into the image root and enables the first-boot 1Password and Pi coding agent (per-user, via [pi.dev](https://pi.dev)) install services |
 | `120-sway` | Sway tiling WM stack (waybar, wofi, mako, kanshi, swaylock/idle/bg) alongside GNOME — GDM picks it up automatically as a login session |
 | `121-elementary-theme` | Builds the elementary GTK stylesheet from source (not packaged for Fedora) |

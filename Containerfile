@@ -29,7 +29,6 @@ RUN rpm-ostree install \
     texlive-collection-latexrecommended \
     fish \
     alacritty \
-    kitty \
     firefox \
     sqlite-devel \
     stow \
@@ -51,6 +50,10 @@ RUN rpm-ostree install \
     fossil \
     ShellCheck \
     && ostree container commit
+
+# Kitty — Fedora package, installed with dnf5
+RUN dnf5 install -y kitty && dnf5 clean all && \
+    ostree container commit
 
 # GitHub CLI — official RPM repo; not in Fedora repos
 RUN curl -fsSL https://cli.github.com/packages/rpm/gh-cli.repo \
@@ -289,6 +292,17 @@ RUN mkdir -p /usr/share/fonts/inter && \
     unzip -q /tmp/inter.zip -d /tmp/inter-extracted && \
     find /tmp/inter-extracted -name "*.otf" -exec cp {} /usr/share/fonts/inter/ \; && \
     rm -rf /tmp/inter.zip /tmp/inter-extracted && \
+    fc-cache -f && \
+    ostree container commit
+
+# Iosevka is not packaged in Fedora; install the upstream TTF release.
+RUN IOSEVKA_VERSION=$(curl -fsSL "https://api.github.com/repos/be5invis/Iosevka/releases/latest" | \
+      jq -er '.tag_name | ltrimstr("v")') && \
+    mkdir -p /usr/share/fonts/iosevka && \
+    curl -fsSL "https://github.com/be5invis/Iosevka/releases/download/v${IOSEVKA_VERSION}/PkgTTF-Iosevka-${IOSEVKA_VERSION}.zip" \
+      -o /tmp/iosevka.zip && \
+    unzip -q /tmp/iosevka.zip -d /usr/share/fonts/iosevka && \
+    rm /tmp/iosevka.zip && \
     fc-cache -f && \
     ostree container commit
 

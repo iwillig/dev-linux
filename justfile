@@ -29,7 +29,7 @@ shell:
 
 # Verify fonts landed correctly
 check-fonts:
-    podman run --rm --platform linux/amd64 {{IMAGE}} fc-list | grep -i "JetBrains\|Nerd\|Inter\|Cascadia"
+    podman run --rm --platform linux/amd64 {{IMAGE}} fc-list | grep -i "JetBrains\|Nerd\|Inter\|Cascadia\|Iosevka"
 
 # List installed packages
 check-packages:
