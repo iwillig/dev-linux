@@ -25,7 +25,7 @@ in a throwaway container or VM before trusting it, and ship it via
 - **Shell**: fish (default), with starship prompt
 - **Terminal**: Alacritty, Kitty, Zellij
 - **Editors**: Emacs, Neovim
-- **Dev tools**: gcc/make/gdb (Development Tools group), pandoc, aspell, fd, bat, eza, zoxide, fzf, jq, yq, httpie, zellij
+- **Dev tools**: gcc/make/gdb (Development Tools group), .NET 10 SDK and OpenRA system libraries, pandoc, aspell, fd, bat, eza, zoxide, fzf, jq, yq, httpie, zellij
 - **Browsers**: Firefox, Nyxt
 - **Apps**: 1Password
 - **Fonts**: JetBrains Mono Nerd Font, Cascadia Code, Inter, Iosevka — with tuned subpixel rendering
@@ -94,7 +94,13 @@ numbered so they apply in a predictable order:
 | `120-sway` | Sway tiling WM stack (waybar, wofi, mako, kanshi, swaylock/idle/bg) alongside GNOME — GDM picks it up automatically as a login session |
 | `121-elementary-theme` | Builds the elementary GTK stylesheet from source (not packaged for Fedora) |
 | `125-llama-cpp` | Local LLM inference via prebuilt `llama.cpp` CPU binaries, pinned to a specific release tag |
-| `126-wine` | Wine + winetricks for running Windows binaries. Ordered last: Fedora's `wine` RPM transitively depends on `meson` (via its bundled mingw-cross vkd3d/SDL3/FAudio components), and `121-elementary-theme` does `dnf5 remove -y meson ninja-build sassc` as build-tool cleanup — installing wine any earlier let that removal cascade into silently uninstalling `wine-core` and friends |
+| `126-wine` | Wine + winetricks for running Windows binaries. Ordered after the theme: Fedora's `wine` RPM transitively depends on `meson` (via its bundled mingw-cross vkd3d/SDL3/FAudio components), and `121-elementary-theme` does `dnf5 remove -y meson ninja-build sassc` as build-tool cleanup — installing wine any earlier let that removal cascade into silently uninstalling `wine-core` and friends |
+
+| `127-openra` | .NET 10 SDK and SDL2, FreeType, OpenAL Soft, and Lua 5.1 libraries for building [OpenRA](https://github.com/OpenRA/OpenRA/blob/bleed/INSTALL.md#linux) |
+
+Build OpenRA with `make DEPENDENCIES=system` to use these system libraries,
+then run `./launch-game.sh` from the OpenRA checkout. The game may require
+original game assets or a downloadable asset pack.
 
 Run `just assemble` to concatenate these into the real `Containerfile` (the
 generated file carries a header telling you not to edit it directly). CI
