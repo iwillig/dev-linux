@@ -21,7 +21,7 @@ in a throwaway container or VM before trusting it, and ship it via
 
 ## What's included
 
-- **Base**: `ghcr.io/ublue-os/bluefin-dx:stable` — GNOME + dev tooling baseline (Fedora 44)
+- **Base**: `ghcr.io/ublue-os/bluefin-dx:stable` — GNOME + dev tooling baseline (currently Fedora 45; the stable tag may move)
 - **Shell**: fish (default), with starship prompt
 - **Terminal**: Alacritty, Kitty, Zellij
 - **Editors**: Emacs, Neovim
@@ -84,9 +84,9 @@ numbered so they apply in a predictable order:
 | `010-hardware` | Framework-specific packages: `thermald`, `fprintd` (fingerprint reader), `powertop` |
 | `020-devtools` | Compiler toolchain (`development-tools` group), Emacs, Neovim, tmux, pandoc, LaTeX, fish, Alacritty, Kitty, Firefox, CLI staples (ripgrep, fzf, bat, eza, jq, gh, ShellCheck, …), and dotfiles tooling (`stow`, `gitleaks`) |
 | `030-cli-tools` | Tools not packaged for Fedora: zellij, lazygit, fastfetch, starship, the `whis` voice-to-text CLI, `trufflehog` secret scanner |
-| `040-browsers` | Nyxt (Lisp-extensible browser), installed from its AppImage tarball |
+| `040-browsers` | Nyxt (Lisp-extensible browser), installed from its pinned AppImage |
 | `050-package-managers` | Homebrew and SDKMAN!, installed into `/var` so they survive `bootc` updates and are writable by the `wheel` group without sudo |
-| `060-languages` | Node/npm-based tooling (Claude Code CLI, TypeScript + LSP), Clojure, and Rust (Fedora's `rustc`/`cargo`, not rustup) |
+| `060-languages` | GNU Guile 3 runtime and development headers, Node/npm-based tooling (Claude Code CLI, TypeScript + LSP), and Rust (Fedora's `rustc`/`cargo`, not rustup) |
 | `070-apps` | Handy and Whis desktop — push-to-talk speech-to-text GUIs |
 | `080-gis` | Spatial/GIS stack: GDAL, Mapnik, QGIS, GRASS, PROJ, GEOS, SpatiaLite |
 | `100-fonts` | JetBrains Mono, Cascadia Code, Noto Emoji, Inter, Iosevka, and the Nerd Font-patched JetBrains Mono |
@@ -97,6 +97,11 @@ numbered so they apply in a predictable order:
 | `126-wine` | Wine + winetricks for running Windows binaries. Ordered after the theme: Fedora's `wine` RPM transitively depends on `meson` (via its bundled mingw-cross vkd3d/SDL3/FAudio components), and `121-elementary-theme` does `dnf5 remove -y meson ninja-build sassc` as build-tool cleanup — installing wine any earlier let that removal cascade into silently uninstalling `wine-core` and friends |
 
 | `127-openra` | .NET 10 SDK and SDL2, FreeType, OpenAL Soft, and Lua 5.1 libraries for building [OpenRA](https://github.com/OpenRA/OpenRA/blob/bleed/INSTALL.md#linux) |
+
+Fedora names the Guile 3 executable `guile3.0`; run it for a REPL or use
+`guile3.0 -c '(display (+ 20 22))'` to evaluate an expression. In Emacs,
+open a Scheme file and run `M-x run-scheme` to start the Guile REPL; the
+system default is configured for Fedora's `guile3.0` executable.
 
 Build OpenRA with `make DEPENDENCIES=system` to use these system libraries,
 then run `./launch-game.sh` from the OpenRA checkout. The game may require
@@ -415,6 +420,17 @@ string in `/etc/kanshi/config` — get the exact make/model/serial via
 `swaymsg -t get_outputs`.
 
 ---
+
+## SELinux
+
+This image requests the kernel argument `selinux=0` through
+`/usr/lib/bootc/kargs.d/90-disable-selinux.toml`. This disables SELinux
+mandatory access control when the image is booted; it does not change the
+currently running system. The change takes effect after deploying the image
+and rebooting. Confirm with `getenforce` and `/proc/cmdline` on the booted
+system. Bootc updates apply image-managed kernel argument changes; removing
+the file in a later image removes this image-managed argument, subject to any
+separately configured machine-local arguments.
 
 ## Known issues
 

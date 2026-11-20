@@ -1,0 +1,2 @@
+# This image intentionally disables SELinux at boot.
+kargs = ["selinux=0"]

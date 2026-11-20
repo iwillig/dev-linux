@@ -1,3 +1,9 @@
+# GNU Guile — runtime and headers for Scheme development and embedding.
+RUN rpm-ostree install \
+    guile30 \
+    guile30-devel \
+    && ostree container commit
+
 # yarnpkg is Fedora's package name for Yarn (plain "yarn" is a pre-existing cmdtest package)
 RUN dnf5 install -y nodejs pnpm yarnpkg && \
     dnf5 clean all && \

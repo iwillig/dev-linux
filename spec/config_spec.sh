@@ -7,6 +7,14 @@ Describe 'Default shell'
   End
 End
 
+Describe 'SELinux boot configuration'
+  It 'requests SELinux be disabled at boot'
+    When run grep -F 'kargs = ["selinux=0"]' /usr/lib/bootc/kargs.d/90-disable-selinux.toml
+    The status should be success
+    The output should include 'selinux=0'
+  End
+End
+
 Describe 'Homebrew'
   It 'is cloned to /var/home/linuxbrew/.linuxbrew'
     When run sh -c '[ -d /var/home/linuxbrew/.linuxbrew ]'

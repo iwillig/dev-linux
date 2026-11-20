@@ -291,6 +291,31 @@ Describe 'JVM ecosystem'
   End
 End
 
+Describe 'GNU Guile'
+  It 'is installed'
+    When run command guile3.0 --version
+    The status should be success
+    The output should include 'Guile'
+  End
+
+  It 'evaluates Scheme expressions'
+    When run command guile3.0 -c '(display (+ 20 22))'
+    The status should be success
+    The output should equal '42'
+  End
+
+  It 'provides development metadata'
+    When run command pkg-config --exists guile-3.0
+    The status should be success
+  End
+
+  It 'configures the Emacs Scheme REPL to use Fedora Guile'
+    When run command emacs --batch --eval "(progn (require 'cmuscheme) (princ scheme-program-name))"
+    The status should be success
+    The output should equal 'guile3.0'
+  End
+End
+
 Describe 'Rust ecosystem'
   Describe 'rustc'
     It 'is installed'

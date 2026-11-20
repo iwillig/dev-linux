@@ -16,9 +16,9 @@ Describe 'Node.js'
 End
 
 Describe 'Emacs'
-  It 'is version 30.x'
+  It 'is version 31.x'
     When run command emacs --version
     The status should be success
-    The output should include 'GNU Emacs 30'
+    The output should include 'GNU Emacs 31'
   End
 End

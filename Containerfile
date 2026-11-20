@@ -108,16 +108,14 @@ RUN TRUFFLEHOG_VERSION=$(curl -sL "https://api.github.com/repos/trufflesecurity/
     curl -fsSL "https://github.com/trufflesecurity/trufflehog/releases/download/${TRUFFLEHOG_VERSION}/trufflehog_${TRUFFLEHOG_VERSION#v}_linux_amd64.tar.gz" \
     | tar -xz -C /usr/bin trufflehog && \
     ostree container commit
-# Nyxt browser — not in Fedora repos; ships as an AppImage inside a tarball
-# /opt is a symlink in ostree images; use /usr/lib instead
-RUN curl -fsSL \
-      "https://github.com/atlas-engineer/nyxt/releases/latest/download/Linux-Nyxt-x86_64.tar.gz" \
-      -o /tmp/nyxt.tar.gz && \
-    mkdir -p /usr/lib/nyxt && \
-    tar -xzf /tmp/nyxt.tar.gz -C /usr/lib/nyxt && \
-    chmod +x /usr/lib/nyxt/*.AppImage && \
+# Nyxt browser — pinned AppImage; /opt is a symlink in ostree images.
+ARG NYXT_VERSION=5.0.0
+RUN mkdir -p /usr/lib/nyxt && \
+    curl -fsSL \
+      "https://github.com/atlas-engineer/nyxt/releases/download/${NYXT_VERSION}/Nyxt-${NYXT_VERSION}-x86_64.AppImage" \
+      -o /usr/lib/nyxt/Nyxt-x86_64.AppImage && \
+    chmod +x /usr/lib/nyxt/Nyxt-x86_64.AppImage && \
     ln -sf /usr/lib/nyxt/Nyxt-x86_64.AppImage /usr/bin/nyxt && \
-    rm /tmp/nyxt.tar.gz && \
     ostree container commit
 # Homebrew — cloned to /home/linuxbrew/.linuxbrew (/home → /var/home in ostree)
 # The image's /var is used to initialize a fresh install, so brew is available on first boot.
@@ -154,6 +152,12 @@ RUN mkdir -p /var/roothome && \
     curl -fsSL "https://raw.githubusercontent.com/reitzig/sdkman-for-fish/main/completions/sdk.fish" \
       -o /etc/fish/completions/sdk.fish && \
     ostree container commit
+# GNU Guile — runtime and headers for Scheme development and embedding.
+RUN rpm-ostree install \
+    guile30 \
+    guile30-devel \
+    && ostree container commit
+
 # yarnpkg is Fedora's package name for Yarn (plain "yarn" is a pre-existing cmdtest package)
 RUN dnf5 install -y nodejs pnpm yarnpkg && \
     dnf5 clean all && \
